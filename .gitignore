@@ -1,0 +1,22 @@
+# Never commit credentials
+tools/opencloud.key
+android/app/src/main/assets/
+dist/
+*.apk
+*.apk.idsig
+keystore.properties
+*.jks
+*.keystore
+
+# Build output
+android/build/
+android/.gradle/
+android/app/build/
+android/out/
+*.class
+*.dex
+tools/__pycache__/
+node_modules/
+.vscode/
+.idea/
+Thumbs.db

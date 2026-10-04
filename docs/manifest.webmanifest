@@ -1,0 +1,18 @@
+{
+  "name": "Roblox Studio Android Edition",
+  "short_name": "Studio AE",
+  "description": "Roblox Studio style editor for Android, web and desktop: 3D viewport, Lua scripting, AI Builder/Coder, Toolbox, templates and Open Cloud publishing.",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "categories": ["productivity", "games", "developer"],
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0f1115">
+<meta name="description" content="Roblox Studio Android Edition — a full Roblox Studio style editor for Android, web and desktop: 3D viewport, Lua scripting, AI Builder/Coder, Toolbox, templates, group games and publish to Roblox.">
+<title>Roblox Studio Android Edition</title>
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app" class="theme-dark">
+
+  <!-- ===== Title bar ===== -->
+  <header id="titlebar">
+    <div class="tb-left">
+      <img class="tb-logo" src="assets/logo.svg" alt="">
+      <div class="tb-title">
+        <span class="tb-name">Roblox Studio <b>Android Edition</b></span>
+        <span class="tb-place" id="tbPlace">Untitled Place</span>
+      </div>
+      <nav class="tb-menu" id="tbMenu">
+        <button data-menu="file">File</button>
+        <button data-menu="edit">Edit</button>
+        <button data-menu="insert">Insert</button>
+        <button data-menu="view">View</button>
+        <button data-menu="plugins">Plugins</button>
+        <button data-menu="help">Help</button>
+      </nav>
+    </div>
+    <div class="tb-right">
+      <button class="chip" id="btnSync" title="Sync / Publish to Roblox"><span class="dot"></span><span id="syncLabel">Local</span></button>
+      <button class="chip account" id="btnAccount" title="Roblox account">
+        <img id="avatarImg" src="assets/default-avatar.svg" alt="">
+        <span id="accountLabel">Sign in</span>
+      </button>
+      <button class="ico" id="btnSettings" title="Settings">⚙</button>
+      <button class="ico" id="btnTheme" title="Toggle light / dark">◐</button>
+    </div>
+  </header>
+
+  <!-- ===== Ribbon ===== -->
+  <nav id="ribbon">
+    <div class="rtabs" id="rtabs">
+      <button class="rtab active" data-tab="home">Home</button>
+      <button class="rtab" data-tab="model">Model</button>
+      <button class="rtab" data-tab="ui">UI</button>
+      <button class="rtab" data-tab="script">Scripting</button>
+      <button class="rtab" data-tab="test">Test</button>
+      <button class="rtab" data-tab="view">View</button>
+      <button class="rtab" data-tab="plugins">Plugins</button>
+      <span class="rtab-spacer"></span>
+      <button class="rtab slim" data-tab="help">Help</button>
+    </div>
+    <div class="rbody" id="rbody"><!-- groups injected --></div>
+  </nav>
+
+  <!-- ===== Workspace ===== -->
+  <main id="workspace">
+
+    <!-- Left dock -->
+    <section id="leftDock" class="dock">
+      <div class="dtabs" id="leftTabs">
+        <button class="dtab active" data-panel="explorer">Explorer</button>
+        <button class="dtab" data-panel="toolbox">Toolbox</button>
+        <button class="dtab" data-panel="templates">Games</button>
+        <button class="dtab" data-panel="groups">Groups</button>
+        <div class="dtabs-tools">
+          <button class="ico sm" id="leftCollapse" title="Collapse panel">⟨</button>
+        </div>
+      </div>
+      <div class="dcontent">
+        <div class="dpanel active" data-panel="explorer">
+          <div class="panel-search"><input id="explorerSearch" placeholder="Filter instances…"></div>
+          <div id="explorerTree" class="tree"></div>
+          <div class="panel-foot">
+            <button class="mini" data-add="Part">+ Part</button>
+            <button class="mini" data-add="Script">+ Script</button>
+            <button class="mini" data-add="Folder">+ Folder</button>
+            <button class="mini danger" id="btnDeleteSel">🗑</button>
+          </div>
+        </div>
+
+        <div class="dpanel" data-panel="toolbox">
+          <div class="panel-search">
+            <input id="toolboxSearch" placeholder="Search toolbox…">
+          </div>
+          <div class="chips" id="toolboxCats"></div>
+          <div id="toolboxGrid" class="cardgrid"></div>
+          <div class="panel-foot"><span class="muted" id="toolboxNote">Built-in asset library</span></div>
+        </div>
+
+        <div class="dpanel" data-panel="templates">
+          <div class="panel-search"><input id="templateSearch" placeholder="Search game templates…"></div>
+          <div id="templateGrid" class="cardgrid"></div>
+        </div>
+
+        <div class="dpanel" data-panel="groups">
+          <div class="group-head">
+            <div class="group-avatar" id="grpAvatar">G</div>
+            <div>
+              <div class="group-name" id="grpName">No group selected</div>
+              <div class="muted small" id="grpMeta">Sign in to load your groups</div>
+            </div>
+          </div>
+          <div class="chips" id="groupCats"></div>
+          <div id="groupList" class="list"></div>
+          <div class="panel-foot">
+            <button class="mini" id="btnNewGroupGame">+ Group Game</button>
+            <button class="mini" id="btnRefreshGroups">↻ Refresh</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Center -->
+    <section id="center">
+      <div id="viewTabs" class="viewtabs">
+        <button class="vtab active" data-doc="place">🏠 Place</button>
+      </div>
+
+      <div id="stageWrap">
+        <!-- Viewport -->
+        <div id="viewport" class="stage active">
+          <canvas id="vp"></canvas>
+          <div class="vp-toolbar" id="vpToolbar">
+            <button class="tbtn active" data-tool="select" title="Select">➤</button>
+            <button class="tbtn" data-tool="move" title="Move">✥</button>
+            <button class="tbtn" data-tool="rotate" title="Rotate">⟳</button>
+            <button class="tbtn" data-tool="scale" title="Scale">⤢</button>
+            <span class="tsep"></span>
+            <button class="tbtn" data-snap="0">Grid: off</button>
+            <span class="tsep"></span>
+            <button class="tbtn" id="btnSnapY">↑Y</button>
+            <button class="tbtn" id="btnFrame">⌖ Frame</button>
+            <button class="tbtn" id="btnGrid">▦ Grid</button>
+          </div>
+          <div class="vp-badge" id="vpBadge">Editor</div>
+          <div class="vp-axis" id="vpAxis"></div>
+          <div class="vp-hint" id="vpHint">Drag to orbit · Wheel / pinch to zoom · Tap a part to select</div>
+          <!-- Play mode HUD -->
+          <div id="playHud" class="play-hud hidden">
+            <div class="play-title"><span class="pulse"></span> Play Solo</div>
+            <div class="play-stats" id="playStats"></div>
+            <button class="btn sm accent" id="btnStopPlay">■ Stop</button>
+          </div>
+          <!-- Touch controls (play mode) -->
+          <div id="touchPad" class="touchpad hidden">
+            <div class="tp-base" id="tpBase"><div class="tp-knob" id="tpKnob"></div></div>
+            <button class="tp-jump" id="tpJump" type="button">JUMP</button>
+          </div>
+        </div>
+
+        <!-- Script editor -->
+        <div id="scriptStage" class="stage">
+          <div class="se-wrap">
+            <div class="se-gutter" id="seGutter"></div>
+            <div class="se-scroll" id="seScroll">
+              <pre class="se-highlight" id="seHighlight" aria-hidden="true"></pre>
+              <textarea class="se-input" id="seInput" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+            </div>
+          </div>
+          <div class="se-status" id="seStatus">Lua · Ln 1, Col 1 · UTF-8</div>
+        </div>
+      </div>
+
+      <!-- Command bar -->
+      <div id="commandBar">
+        <span class="cb-prefix">&gt;</span>
+        <input id="cmdInput" placeholder="Command bar — try: insert part, goto 0,10,0, theme light, publish, ai:make an obby">
+        <button class="mini" id="cmdRun">Run</button>
+      </div>
+    </section>
+
+    <!-- Right dock -->
+    <section id="rightDock" class="dock">
+      <div class="dtabs" id="rightTabs">
+        <button class="dtab active" data-panel="properties">Properties</button>
+        <button class="dtab" data-panel="ai">AI Builder</button>
+        <button class="dtab" data-panel="output">Output</button>
+        <div class="dtabs-tools">
+          <button class="ico sm" id="rightCollapse" title="Collapse panel">⟩</button>
+        </div>
+      </div>
+      <div class="dcontent">
+        <div class="dpanel active" data-panel="properties">
+          <div class="prop-head" id="propHead">No selection</div>
+          <div id="propList" class="proplist"></div>
+        </div>
+
+        <div class="dpanel" data-panel="ai">
+          <div class="ai-head">
+            <div class="ai-orb"></div>
+            <div>
+              <div class="ai-title">AI Builder &amp; Coder</div>
+              <div class="muted small" id="aiModeLabel">Offline engine · Lua aware</div>
+            </div>
+          </div>
+          <div class="chips" id="aiQuick">
+            <button class="chipbtn" data-ai="Build an obby with lava and checkpoints">Obby</button>
+            <button class="chipbtn" data-ai="Write a coin collector script">Coins</button>
+            <button class="chipbtn" data-ai="Make a tycoon dropper">Tycoon</button>
+            <button class="chipbtn" data-ai="Create a sword fight arena">Arena</button>
+            <button class="chipbtn" data-ai="Add a day night cycle">Day/Night</button>
+          </div>
+          <div id="aiLog" class="ailog"></div>
+          <div class="ai-input">
+            <textarea id="aiInput" rows="2" placeholder="Describe what to build or which Lua to write…"></textarea>
+            <div class="ai-actions">
+              <label class="switch"><input type="checkbox" id="aiBuild" checked><span>Build parts</span></label>
+              <label class="switch"><input type="checkbox" id="aiScript" checked><span>Write Lua</span></label>
+              <button class="btn sm accent" id="btnAiGo">Generate</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="dpanel" data-panel="output">
+          <div class="panel-search">
+            <input id="outputFilter" placeholder="Filter output…">
+            <button class="mini" id="btnClearOutput">Clear</button>
+          </div>
+          <div id="outputList" class="output"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Status bar ===== -->
+  <footer id="statusbar">
+    <span id="stMode" class="st-item">EditMode</span>
+    <span id="stSel" class="st-item">1 item selected</span>
+    <span id="stPos" class="st-item">0, 0, 0</span>
+    <span class="st-spacer"></span>
+    <span id="stFps" class="st-item">60 fps</span>
+    <span id="stNet" class="st-item">● offline</span>
+    <span id="stVer" class="st-item">v1.0.0</span>
+  </footer>
+
+  <!-- ===== Start screen ===== -->
+  <div id="startScreen" class="overlay">
+    <div class="start-inner">
+      <div class="start-hero">
+        <img class="start-logo" src="assets/logo.svg" alt="">
+        <div>
+          <h1>Roblox Studio <span>Android Edition</span></h1>
+          <p>Build, script, AI-generate and publish Roblox experiences — from your phone, tablet or browser.</p>
+          <div class="start-actions">
+            <button class="btn accent lg" id="stNew">＋ New Baseplate</button>
+            <button class="btn lg" id="stTemplates">Browse templates</button>
+            <button class="btn lg ghost" id="stOpen">Open place file</button>
+            <input type="file" id="fileOpen" accept=".rbxlx,.xml,.json" hidden>
+          </div>
+        </div>
+      </div>
+
+      <div class="start-cols">
+        <section>
+          <h2>Game templates</h2>
+          <div class="cardgrid" id="startTemplates"></div>
+        </section>
+        <section>
+          <h2>Recent places</h2>
+          <div class="list" id="recentList"></div>
+          <h2 class="mt">Your groups</h2>
+          <div class="list" id="startGroups"></div>
+        </section>
+      </div>
+
+      <div class="start-foot">
+        <button class="mini" id="stAccounts">Roblox account</button>
+        <button class="mini" id="stImport">Import .rbxlx</button>
+        <button class="muted small" id="stHide">Hide start screen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Modal host ===== -->
+  <div id="modalHost" class="overlay hidden">
+    <div class="modal" id="modalBox">
+      <div class="modal-head"><span id="modalTitle">Dialog</span><button class="ico" id="modalClose">✕</button></div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-foot" id="modalFoot"></div>
+    </div>
+  </div>
+
+  <!-- ===== Context menu ===== -->
+  <div id="ctxMenu" class="ctx hidden"></div>
+
+  <!-- ===== Toasts ===== -->
+  <div id="toasts" class="toasts"></div>
+
+  <div id="dragGhost" class="drag-ghost hidden"></div>
+</div>
+
+<script src="js/lua.js"></script>
+<script src="js/secrets.js"></script>
+<script src="js/config.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/roblox.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
