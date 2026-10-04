@@ -33,9 +33,8 @@
     </div>
     <div class="tb-right">
       <button class="chip" id="btnSync" title="Sync / Publish to Roblox"><span class="dot"></span><span id="syncLabel">Local</span></button>
-      <button class="chip account" id="btnAccount" title="Roblox account">
-        <img id="avatarImg" src="assets/default-avatar.svg" alt="">
-        <span id="accountLabel">Sign in</span>
+      <button class="chip account" id="btnAccount" title="Credentials / Open Cloud API key">
+        <span id="accountLabel">🔑 API key</span>
       </button>
       <button class="ico" id="btnSettings" title="Settings">⚙</button>
       <button class="ico" id="btnTheme" title="Toggle light / dark">◐</button>
@@ -103,7 +102,7 @@
             <div class="group-avatar" id="grpAvatar">G</div>
             <div>
               <div class="group-name" id="grpName">No group selected</div>
-              <div class="muted small" id="grpMeta">Sign in to load your groups</div>
+              <div class="muted small" id="grpMeta">Local group games</div>
             </div>
           </div>
           <div class="chips" id="groupCats"></div>
@@ -264,13 +263,13 @@
         <section>
           <h2>Recent places</h2>
           <div class="list" id="recentList"></div>
-          <h2 class="mt">Your groups</h2>
+          <h2 class="mt">Group games</h2>
           <div class="list" id="startGroups"></div>
         </section>
       </div>
 
       <div class="start-foot">
-        <button class="mini" id="stAccounts">Roblox account</button>
+        <button class="mini" id="stAccounts">API settings</button>
         <button class="mini" id="stImport">Import .rbxlx</button>
         <button class="muted small" id="stHide">Hide start screen</button>
       </div>

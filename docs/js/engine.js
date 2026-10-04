@@ -1286,17 +1286,59 @@
     env.Enum = enumTable;
 
     /* ---------- services ---------- */
-    const dataStoreBacking = {};
-    const dataStore = new L.Table({
-      GetAsync: (k) => (k in dataStoreBacking ? dataStoreBacking[k] : null),
-      SetAsync: (k, v) => { dataStoreBacking[k] = v; return true; },
-      UpdateAsync: (k, fn) => { const r = runLuaCallback(fn, [dataStoreBacking[k]]); dataStoreBacking[k] = Array.isArray(r) ? r[0] : r; return dataStoreBacking[k]; },
-      IncrementAsync: (k, d) => { dataStoreBacking[k] = (dataStoreBacking[k] || 0) + (d || 1); return dataStoreBacking[k]; },
-      RemoveAsync: (k) => { delete dataStoreBacking[k]; return true; },
-      GetSortedAsync: () => ({ GetPageAsync: () => [] })
-    });
+    /* DataStores: per-name key/value storage persisted to localStorage, so
+       test runs keep data across sessions. Published games use Roblox's
+       own DataStoreService — this only backs local play/test mode. */
+    const dsMem = Object.create(null);
+    function dsKey(name) { return 'rsa:ds:' + L.tostring(name || 'global'); }
+    function dsBacking(name) {
+      const key = L.tostring(name || 'global');
+      if (!dsMem[key]) {
+        let data = null;
+        try { const raw = localStorage.getItem(dsKey(name)); if (raw) data = JSON.parse(raw); } catch (e) {}
+        dsMem[key] = (data && typeof data === 'object' && !Array.isArray(data)) ? data : {};
+      }
+      return dsMem[key];
+    }
+    function dsPersist(name) {
+      try {
+        const b = dsBacking(name), out = {};
+        for (const k in b) out[k] = unbox(b[k]);
+        localStorage.setItem(dsKey(name), JSON.stringify(out));
+      } catch (e) { /* storage full / unavailable */ }
+    }
+    function dsRead(b, k) {
+      if (!(String(k) in b)) return null;
+      const v = b[String(k)];
+      if (v === undefined || v === null) return null;
+      return (v instanceof L.Table) ? v : box(v);
+    }
+    function makeDataStore(name) {
+      return new L.Table({
+        GetAsync: (k) => dsRead(dsBacking(name), k),
+        SetAsync: (k, v) => { dsBacking(name)[String(k)] = v; dsPersist(name); return true; },
+        UpdateAsync: (k, fn) => {
+          const r = runLuaCallback(fn, [dsRead(dsBacking(name), k)]);
+          dsBacking(name)[String(k)] = Array.isArray(r) ? r[0] : r;
+          dsPersist(name);
+          return dsRead(dsBacking(name), k);
+        },
+        IncrementAsync: (k, d) => {
+          const b = dsBacking(name);
+          const cur = b[String(k)];
+          b[String(k)] = (typeof cur === 'number' ? cur : 0) + (d || 1);
+          dsPersist(name);
+          return b[String(k)];
+        },
+        RemoveAsync: (k) => { delete dsBacking(name)[String(k)]; dsPersist(name); return true; },
+        GetSortedAsync: () => ({ GetPageAsync: () => [] })
+      });
+    }
     const svcFallback = {
-      DataStoreService: new L.Table({ GetDataStore: () => dataStore, GetOrderedDataStore: () => dataStore }),
+      DataStoreService: new L.Table({
+        GetDataStore: (n) => makeDataStore(L.tostring(n || 'global')),
+        GetOrderedDataStore: (n) => makeDataStore('ordered:' + L.tostring(n || 'global'))
+      }),
       TweenService: new L.Table({
         Create: (obj, info, goals) => {
           const apply = () => {

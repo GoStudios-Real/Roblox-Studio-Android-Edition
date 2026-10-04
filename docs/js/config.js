@@ -6,25 +6,24 @@
     set(k, v) { try { localStorage.setItem('rsa:' + k, JSON.stringify(v)); } catch (e) {} }
   };
 
+  /* Keys that must also update the in-memory config (so changes apply
+     immediately, without a page reload). */
+  const SETTING_TARGET = {
+    apiKey: ['openCloud', 'apiKey'],
+    universeId: ['openCloud', 'universeId'],
+    placeId: ['openCloud', 'placeId'],
+    proxy: ['openCloud', 'proxy'],
+    aiEndpoint: ['ai', 'endpoint'],
+    aiKey: ['ai', 'apiKey'],
+    aiModel: ['ai', 'model']
+  };
+
   const Config = {
     version: '1.0.0',
     name: 'Roblox Studio Android Edition',
     store,
 
     // ---- Fill these in (or set them in Settings > Credentials) ----
-    oauth: {
-      clientId: store.get('clientId', ''),
-      clientSecret: store.get('clientSecret', ''),
-      // Deep link used by the APK; HTTPS page used by the web build.
-      redirectUri: store.get('redirectUri',
-        location.protocol === 'file:' ? 'robloxstudioae://auth'
-        : location.origin + location.pathname.replace(/[^/]*$/, '') + 'auth.html'),
-      scopes: 'openid profile group:read asset:read universe:write universe.place:write',
-      authorize: 'https://apis.roblox.com/oauth/v1/authorize',
-      token: 'https://apis.roblox.com/oauth/v1/token',
-      userinfo: 'https://apis.roblox.com/oauth/v1/userinfo'
-    },
-
     openCloud: {
       apiKey: store.get('apiKey', S.openCloudApiKey || ''),
       universeId: store.get('universeId', ''),
@@ -41,7 +40,11 @@
     },
 
     getSetting(k, d) { return store.get(k, d); },
-    setSetting(k, v) { store.set(k, v); },
+    setSetting(k, v) {
+      store.set(k, v);
+      const live = SETTING_TARGET[k];
+      if (live) Config[live[0]][live[1]] = v;
+    },
 
     // All Roblox endpoints we talk to.
     api: {

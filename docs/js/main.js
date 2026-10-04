@@ -1,5 +1,5 @@
 /* ============================================================
-   main.js — boot sequence, Android bridge, OAuth callback,
+   main.js — boot sequence, Android bridge,
    persistence (drafts + recents), touch controls, service worker
    ============================================================ */
 (function (global) {
@@ -116,36 +116,6 @@
     }
   }
 
-  /* ---------------- OAuth callback (web auth.html / APK deep link) ---------------- */
-  async function finishAuth() {
-    const q = new URLSearchParams(location.search);
-    const err = q.get('error');
-    if (err) {
-      global.UI.toast('Sign-in failed: ' + (q.get('error_description') || err), 'err', 7000);
-      cleanUrl();
-      return;
-    }
-    if (!q.get('code')) return;
-    global.UI.toast('Completing Roblox sign-in…', 'info');
-    try {
-      const t = await global.Roblox.handleCallback(location.search);
-      if (t) {
-        global.UI.toast('Signed in to Roblox ✓', 'ok');
-        try { await global.UI.refreshAccount(); } catch (e) { console.warn(e); }
-        global.UI.updateSyncChip();
-        global.Engine.log('sys', 'Roblox account connected');
-      }
-    } catch (e) {
-      global.UI.toast(e.message, 'err', 8000);
-      global.Engine.log('err', 'OAuth: ' + e.message);
-    }
-    cleanUrl();
-  }
-
-  function cleanUrl() {
-    try { history.replaceState({}, '', location.pathname); } catch (e) { /* ignore */ }
-  }
-
   /* ---------------- touch controls (play mode) ---------------- */
   function wireTouch() {
     const pad = $('#touchPad');
@@ -247,12 +217,6 @@
 
     window.addEventListener('beforeunload', () => { if (snapTimer) { clearTimeout(snapTimer); snapshotPlace(); } });
     doc.addEventListener('visibilitychange', () => { if (doc.hidden && snapTimer) { clearTimeout(snapTimer); snapshotPlace(); } });
-
-    finishAuth().then(() => {
-      if (global.Roblox.signedIn()) {
-        global.UI.refreshAccount().catch(() => { /* offline / expired */ });
-      }
-    }).catch((e) => console.warn(e));
   }
 
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot);

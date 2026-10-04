@@ -211,11 +211,10 @@
         ['🎓 Learn Lua', () => openLuaHelp(), 'Lua cheatsheet'],
         ['🐞 Report', () => window.open('https://github.com/GoStudios-Real/Roblox-Studio-Android-Edition/issues', '_blank'), 'Report an issue']
       ] },
-      { label: 'Account', items: [
-        ['🔐 Sign in', () => signIn(), 'Roblox account'],
-        ['🔓 Sign out', () => signOut(), 'Sign out'],
-        ['👥 My groups', () => openPanel('left', 'groups'), 'Groups'],
-        ['🚀 Publish', () => action('publish'), 'Publish to Roblox']
+      { label: 'Roblox', items: [
+        ['🚀 Publish', () => action('publish'), 'Publish to Roblox (API key)'],
+        ['👥 Group games', () => openPanel('left', 'groups'), 'Local group games'],
+        ['🔐 Credentials', () => openSettings(), 'Open Cloud API key']
       ] }
     ]
   };
@@ -438,7 +437,7 @@
     const local = E().state.groupGames;
     let html = '';
     if (!gs.length) {
-      html += '<div class="note">Sign in with your Roblox account to load groups, or create local group games below.</div>';
+      html += '<div class="note">Group games are saved on this device — no Roblox sign-in needed. Create one below.</div>';
     } else {
       gs.forEach((g) => {
         html += '<div class="li" data-gid="' + esc(g.id) + '"><div class="lav">' + esc((g.name || 'G')[0]) + '</div>' +
@@ -465,7 +464,7 @@
   function newGroupGame() {
     dialog('New group game', [
       { label: 'Game name', id: 'name', value: 'My Group Game' },
-      { label: 'Group', id: 'group', type: 'select', options: (E().state.groups.length ? E().state.groups.map((g) => g.name) : ['No group loaded']) },
+      { label: 'Group', id: 'group', value: 'My Group' },
       { label: 'Template', id: 'template', type: 'select', options: global.Templates.list.map((t) => t.name) },
       { label: 'Description', id: 'desc', value: 'A game for our Roblox group!' }
     ], (vals) => {
@@ -631,24 +630,18 @@
     const c = global.Config;
     const d = dialog('Settings · Credentials', [
       { html: '<div class="note warn">Credentials stay on this device (<code>localStorage</code>). The Android APK build can bundle them; the public GitHub build never receives them.</div>' },
-      { label: 'Roblox OAuth Client ID', id: 'clientId', value: c.oauth.clientId, placeholder: 'e.g. 816547628409595165403873012' },
-      { label: 'OAuth Client Secret (optional, confidential clients)', id: 'clientSecret', value: c.oauth.clientSecret },
-      { label: 'OAuth redirect URI', id: 'redirectUri', value: c.oauth.redirectUri },
-      { label: 'Open Cloud API key', id: 'apiKey', value: c.openCloud.apiKey },
-      { label: 'Universe ID', id: 'universeId', value: c.openCloud.universeId, placeholder: 'from Creator Dashboard → ⋯ → Copy Universe ID' },
-      { label: 'Place ID', id: 'placeId', value: c.openCloud.placeId, placeholder: 'from the place Configure page URL' },
+      { label: 'Open Cloud API key', id: 'apiKey', value: c.openCloud.apiKey, placeholder: 'starts with txo…' },
+      { label: 'Place link or Place ID (auto-finds the Universe ID)', id: 'placeId', value: c.openCloud.placeId, placeholder: 'https://www.roblox.com/games/1234567890/My-Game' },
+      { label: 'Universe ID (optional — found automatically)', id: 'universeId', value: c.openCloud.universeId, placeholder: 'leave empty to auto-resolve from the place' },
       { label: 'CORS proxy prefix (web only, optional)', id: 'proxy', value: c.openCloud.proxy, placeholder: 'https://your-worker.workers.dev/?url=' },
       { label: 'AI endpoint (OpenAI-compatible, optional)', id: 'aiEndpoint', value: c.ai.endpoint, placeholder: 'https://api.openai.com/v1' },
       { label: 'AI API key', id: 'aiKey', value: c.ai.apiKey },
       { label: 'AI model', id: 'aiModel', value: c.ai.model }
     ], (v) => {
       const s = c.setSetting;
-      s('clientId', v.clientId.trim());
-      s('clientSecret', v.clientSecret.trim());
-      s('redirectUri', v.redirectUri.trim());
       s('apiKey', v.apiKey.trim());
+      s('placeId', global.Roblox.parsePlaceId(v.placeId));
       s('universeId', v.universeId.trim());
-      s('placeId', v.placeId.trim());
       s('proxy', v.proxy.trim());
       s('aiEndpoint', v.aiEndpoint.trim());
       s('aiKey', v.aiKey.trim());
@@ -662,25 +655,41 @@
   function openGameSettings() {
     const c = global.Config;
     dialog('Game Settings · Publishing', [
-      { html: '<div class="note">Publishing pushes your place file (.rbxlx) to Roblox through Open Cloud <code>universes/v1/…/versions</code>. Create the API key with the <b>universe-places</b> → <b>Write</b> permission.</div>' },
+      { html: '<div class="note">Publishing pushes your place file (.rbxlx) to Roblox through Open Cloud <code>universes/v1/…/versions</code> using your API key — no Roblox account sign-in. Create the key with the <b>universe-places</b> → <b>Write</b> permission.</div>' },
       { label: 'Place name', id: 'name', value: E().state.place.props.Name || 'My Place' },
-      { label: 'Universe ID', id: 'universeId', value: c.openCloud.universeId },
-      { label: 'Place ID', id: 'placeId', value: c.openCloud.placeId },
+      { label: 'Place link or Place ID', id: 'placeId', value: c.openCloud.placeId, placeholder: 'https://www.roblox.com/games/1234567890/My-Game' },
+      { label: 'Universe ID (optional — auto-found)', id: 'universeId', value: c.openCloud.universeId, placeholder: 'leave empty to find it automatically' },
       { label: 'Version type', id: 'vt', type: 'select', options: ['Published', 'Saved'], value: 'Published' },
       { label: 'Description', id: 'desc', type: 'textarea', value: 'Made with Roblox Studio Android Edition' },
-      { html: '<div class="note ok">Tip: Universe ID = ⋯ on the experience thumbnail · Place ID = the number in the place Configure URL.</div>' }
+      { html: '<div class="note ok">Tip: paste your game\'s URL from the browser or Creator Dashboard — the Universe ID is resolved automatically. Published games then run on Roblox\'s servers, so players just open your game link to play.</div>' }
     ], async (v) => {
       E().state.place.props.Name = v.name;
+      c.setSetting('placeId', global.Roblox.parsePlaceId(v.placeId));
       c.setSetting('universeId', v.universeId.trim());
-      c.setSetting('placeId', v.placeId.trim());
       await publishNow(v.vt);
     }, { buttons: '<button class="btn" data-x="cancel">Close</button><button class="btn" data-x="ok">Publish now</button>' });
   }
 
   async function publishNow(vt) {
     const c = global.Config;
-    if (!c.openCloud.universeId || !c.openCloud.placeId) { toast('Set Universe ID and Place ID first', 'warn'); openGameSettings(); return; }
+    if (!c.openCloud.placeId) { toast('Paste your game link or Place ID first', 'warn'); openGameSettings(); return; }
     if (!c.openCloud.apiKey) { toast('Add your Open Cloud API key in Settings', 'warn'); openSettings(); return; }
+    if (!c.openCloud.universeId) {
+      const findEl = toast('Finding Universe ID for place ' + c.openCloud.placeId + '…', 'info', 30000);
+      try {
+        const u = await global.Roblox.resolveUniverse(c.openCloud.placeId);
+        c.setSetting('universeId', u);
+        if (findEl) findEl.remove();
+        toast('Universe ' + u + ' found ✓', 'ok');
+        E().log('sys', 'Resolved universe ' + u + ' from place ' + c.openCloud.placeId);
+      } catch (e) {
+        if (findEl) findEl.remove();
+        toast(e.message, 'err', 7000);
+        E().log('err', e.message);
+        openGameSettings();
+        return;
+      }
+    }
     const xml = E().toXML();
     const toastEl = toast('Publishing ' + (E().state.place.props.Name || 'place') + '…', 'info', 60000);
     try {
@@ -746,8 +755,9 @@
         '<b>Script:</b> Scripting tab → new script, edit with Lua highlighting, press Run.<br>' +
         '<b>AI:</b> right dock → AI Builder. Describe what you want; hit Generate, then “Build in workspace”.<br>' +
         '<b>Templates:</b> left dock → Games, or the start screen.<br>' +
-        '<b>Publish:</b> Home → Publish. Needs Universe ID + Place ID + API key (Settings → Credentials).<br>' +
-        '<b>Account:</b> top-right sign-in uses Roblox OAuth 2.0 (PKCE).</div>',
+        '<b>Publish:</b> Home → Publish. Paste your game link (Place ID auto-fills the Universe ID) + API key (Settings → Credentials).<br>' +
+        '<b>Account:</b> no sign-in needed — publishing is authenticated by your Open Cloud API key, and published games run on Roblox\'s servers where players join them like any other game.<br>' +
+        '<b>DataStores:</b> DataStoreService works while testing and persists between sessions here; published games use Roblox\'s real DataStores.</div>',
       buttons: '<button class="btn accent" data-x="ok">Close</button>'
     });
   }
@@ -975,39 +985,7 @@
     reader.readAsText(file);
   }
 
-  /* ---------------- account ---------------- */
-  async function signIn() {
-    try {
-      if (!global.Config.oauth.clientId) { openSettings(); toast('Add your Roblox OAuth Client ID first', 'warn'); return; }
-      const r = await global.Roblox.login();
-      if (r && r.mode === 'external') toast('Complete the sign-in in your browser…', 'info', 8000);
-    } catch (e) {
-      toast(e.message, 'err', 6000);
-      if (e.code === 'no-client-id') openSettings();
-    }
-  }
-  function signOut() {
-    global.Roblox.signOut();
-    $('#accountLabel').textContent = 'Sign in';
-    $('#avatarImg').src = 'assets/default-avatar.svg';
-    E().state.groups = [];
-    renderGroups();
-    toast('Signed out of Roblox', 'info');
-  }
-  async function refreshAccount() {
-    if (!global.Roblox.signedIn()) return;
-    const info = await global.Roblox.userInfo();
-    if (info) {
-      const name = info.preferred_username || info.nickname || info.sub || 'Signed in';
-      $('#accountLabel').textContent = name;
-      E().log('sys', 'Signed in as ' + name);
-      const groups = await global.Roblox.myGroups(info.sub);
-      E().state.groups = groups;
-      renderGroups();
-      if (info.picture) $('#avatarImg').src = info.picture;
-      toast('Signed in as ' + name, 'ok');
-    }
-  }
+  /* ---------------- sync status ---------------- */
 
   function updateSyncChip(published) {
     const c = global.Config;
@@ -1051,7 +1029,7 @@
 
   /* ---------------- menus ---------------- */
   const MENUS = {
-    file: [['New place', 'new'], ['Open…', 'open'], ['Save / Download .rbxlx', 'save'], ['-', ''], ['Publish to Roblox…', 'publish'], ['Game Settings…', 'publish'], ['-', ''], ['Sign in to Roblox', '_signin'], ['Settings / Credentials', '_settings']],
+    file: [['New place', 'new'], ['Open…', 'open'], ['Save / Download .rbxlx', 'save'], ['-', ''], ['Publish to Roblox…', 'publish'], ['Game Settings…', 'publish'], ['-', ''], ['Settings / Credentials', '_settings']],
     edit: [['Undo', '_undo'], ['Redo', '_redo'], ['Duplicate', '_dup'], ['Delete', '_del'], ['-', ''], ['Select all', '_all'], ['Deselect', '_none']],
     insert: [['Part', '_part'], ['Spawn Location', '_spawn'], ['Script', 'newscript'], ['LocalScript', 'newlocalscript'], ['Folder', '_folder'], ['-', ''], ['Open Toolbox', '_toolbox']],
     view: [['Explorer', '_explorer'], ['Properties', '_props'], ['Output', '_output'], ['AI Builder', '_ai'], ['-', ''], ['Toggle left dock', '_l'], ['Toggle right dock', '_r'], ['Fullscreen', '_full']],
@@ -1075,7 +1053,7 @@
   function menuCommand(c) {
     if (c.startsWith('_')) {
       const map = {
-        _signin: signIn, _settings: openSettings, _undo: () => E().undo(), _redo: () => E().redo(),
+        _settings: openSettings, _undo: () => E().undo(), _redo: () => E().redo(),
         _dup: () => E().duplicateSelection(), _del: () => E().deleteSelection(),
         _all: () => { const ids = []; E().walk(E().state.services.Workspace, (n) => ids.push(n.id)); E().select(ids); },
         _none: () => E().clearSelection(), _part: () => E().insertPart('Part'),
@@ -1235,7 +1213,7 @@
     // top bar
     $('#btnSettings').addEventListener('click', openSettings);
     $('#btnTheme').addEventListener('click', () => setTheme(document.body.classList.contains('app-theme-light') ? 'dark' : 'light'));
-    $('#btnAccount').addEventListener('click', () => (global.Roblox.signedIn() ? openPanel('left', 'groups') : signIn()));
+    $('#btnAccount').addEventListener('click', openSettings);
     $('#btnSync').addEventListener('click', openGameSettings);
     // explorer
     $('#explorerSearch').addEventListener('input', renderExplorer);
@@ -1247,10 +1225,9 @@
     $('#templateSearch').addEventListener('input', () => renderTemplates($('#templateGrid'), 'templates'));
     // groups
     $('#btnNewGroupGame').addEventListener('click', newGroupGame);
-    $('#btnRefreshGroups').addEventListener('click', async () => {
-      const info = await global.Roblox.userInfo();
-      if (info) { E().state.groups = await global.Roblox.myGroups(info.sub); renderGroups(); toast('Groups refreshed', 'ok'); }
-      else toast('Sign in to load groups', 'warn');
+    $('#btnRefreshGroups').addEventListener('click', () => {
+      renderGroups();
+      toast('Group games are stored on this device', 'info');
     });
     // output
     $('#outputFilter').addEventListener('input', renderOutput);
@@ -1277,7 +1254,7 @@
     $('#stNew').addEventListener('click', () => { actions.new(); hideStart(); });
     $('#stTemplates').addEventListener('click', () => { hideStart(); openPanel('left', 'templates'); });
     $('#stOpen').addEventListener('click', () => $('#fileOpen').click());
-    $('#stAccounts').addEventListener('click', () => (global.Roblox.signedIn() ? signOut() : signIn()));
+    $('#stAccounts').addEventListener('click', openSettings);
     $('#stImport').addEventListener('click', () => $('#fileOpen').click());
     $('#stHide').addEventListener('click', hideStart);
     $('#fileOpen').addEventListener('change', (e) => { if (e.target.files[0]) openFile(e.target.files[0]); });
@@ -1351,13 +1328,13 @@
     setStatus();
     const theme = (() => { try { return localStorage.getItem('rsa:theme'); } catch (e) { return null; } })();
     if (theme) setTheme(theme);
-    if (!global.Config.oauth.clientId && !global.Config.openCloud.apiKey) setTimeout(() => toast('Tip: add your Roblox credentials in Settings ⚙ → Credentials', 'info', 7000), 1400);
+    if (!global.Config.openCloud.apiKey) setTimeout(() => toast('Tip: add your Open Cloud API key in Settings ⚙ → Credentials to publish to Roblox', 'info', 7000), 1400);
   }
 
   global.UI = {
     boot, toast, refresh, renderExplorer, renderProperties, renderOutput, renderToolbox, renderGroups,
     renderTemplates, renderStart, showStart, hideStart, openPanel, toggleDock, dialog, openSettings,
-    openGameSettings, publishNow, signIn, signOut, refreshAccount, updateSyncChip, runCommand,
+    openGameSettings, publishNow, updateSyncChip, runCommand,
     openScript, runCurrent, setStatus, action, applyTemplate, download, openFile, quickAI, runAI,
     setTheme, focusAI, toastCount: () => 0
   };

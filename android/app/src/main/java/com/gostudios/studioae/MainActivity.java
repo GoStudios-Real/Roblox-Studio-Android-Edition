@@ -38,8 +38,8 @@ import java.util.concurrent.TimeUnit;
  *
  * Loads the shared web build from assets and exposes `AndroidBridge`
  * (wrapped as NativeBridge in js/main.js) so the app can talk to
- * Roblox APIs without CORS, open the OAuth flow in the system browser,
- * receive the robloxstudioae://auth deep link and save exported files.
+ * Roblox Open Cloud APIs without CORS, open links in the system browser
+ * and save exported files.
  */
 public class MainActivity extends Activity {
 
@@ -91,8 +91,8 @@ public class MainActivity extends Activity {
                 Uri u = request.getUrl();
                 String scheme = u.getScheme() == null ? "" : u.getScheme().toLowerCase();
                 if ("http".equals(scheme) || "https".equals(scheme)) {
-                    // Any real web navigation (e.g. the OAuth authorize page)
-                    // happens in the system browser, never inside the WebView.
+                    // Real web navigation happens in the system browser,
+                    // never inside the WebView.
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, u));
                     } catch (Exception e) {
@@ -213,7 +213,7 @@ public class MainActivity extends Activity {
             return result.toString();
         }
 
-        /** Open a URL in the system browser (used for the OAuth sign-in flow). */
+        /** Open a URL in the system browser. */
         @JavascriptInterface
         public void openUrl(final String url) {
             activity.runOnUiThread(() -> {

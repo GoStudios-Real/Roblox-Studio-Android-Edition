@@ -3,7 +3,6 @@ const CACHE = 'rsa-shell-v1';
 const CORE = [
   './',
   './index.html',
-  './auth.html',
   './manifest.webmanifest',
   './css/app.css',
   './js/lua.js',
@@ -16,8 +15,7 @@ const CORE = [
   './js/ui.js',
   './js/main.js',
   './assets/logo.svg',
-  './assets/icon.svg',
-  './assets/default-avatar.svg'
+  './assets/icon.svg'
 ];
 
 self.addEventListener('install', (e) => {

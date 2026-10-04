@@ -291,12 +291,32 @@
   }
 
   /* ---------------- Values ---------------- */
+  let tableSeq = 0;
   class Table {
-    constructor(host) { this.m = new Map(); this.meta = null; this.host = host || null; this.arr = null; }
+    constructor(host) {
+      this.m = new Map(); this.meta = null; this.host = host || null; this.arr = null;
+      /* stable identity across Proxy wrappers of the same table */
+      Object.defineProperty(this, '__uid', { value: ++tableSeq, enumerable: false });
+    }
     get(k) {
       if (typeof k === 'number' && k === Math.floor(k)) k = k;
       if (this.m.has(k)) return this.m.get(k);
-      if (this.host && k in this.host) { const v = this.host[k]; return typeof v === 'function' ? v.bind(this.host) : v; }
+      if (this.host && k in this.host) {
+        const v = this.host[k];
+        if (typeof v !== 'function') return v;
+        /* Host functions are plain JS: they do not take the owning table as
+           a hidden first argument. Method calls (`obj:fn(a)`) prepend self —
+           drop it when it is this very table so host APIs receive the real
+           arguments. Standard library calls (`string.rep(s,n)`, colon calls
+           on values like `("x"):rep(3)`) pass something other than the owning
+           table, so they are untouched. */
+        const ownerUid = this.__uid;
+        const bound = v.bind(this.host);
+        return function (...args) {
+          const dropSelf = args.length > 0 && args[0] instanceof Table && args[0].__uid === ownerUid;
+          return bound.apply(null, dropSelf ? args.slice(1) : args);
+        };
+      }
       if (this.meta) { const ix = mt(this.meta, '__index'); if (ix) { if (ix instanceof Table) return ix.get(k); if (typeof ix === 'function') return 'CALL'; } }
       return null;
     }

@@ -161,6 +161,63 @@ function ok(cond, label) {
   E.playStop();
   ok(E.state.mode === 'edit', 'play mode stops');
 
+  console.log('oauth removed, api-key only');
+  ok(!global.Config.oauth, 'oauth config block removed');
+  ok(typeof global.Roblox.login === 'undefined' && typeof global.Roblox.handleCallback === 'undefined', 'OAuth functions removed from Roblox module');
+  ok(typeof global.Roblox.signedIn === 'undefined' && typeof global.Roblox.userInfo === 'undefined', 'sign-in helpers removed');
+  ok(typeof global.UI.signIn === 'undefined' && typeof global.UI.refreshAccount === 'undefined', 'sign-in UI functions removed');
+  ok(typeof global.Roblox.publishPlace === 'function' && typeof global.Roblox.introspectKey === 'function', 'api-key publishing kept');
+  ok(global.Roblox.parsePlaceId('https://www.roblox.com/games/1234567890/My-Game?x=1') === '1234567890', 'place URL parsed to id');
+  ok(global.Roblox.parsePlaceId('  987654  ') === '987654', 'numeric place id parsed');
+  ok(typeof global.Roblox.resolveUniverse === 'function', 'universe auto-resolve present');
+  global.Config.setSetting('universeId', '12345');
+  ok(global.Config.openCloud.universeId === '12345', 'settings apply immediately without reload');
+  global.Config.setSetting('universeId', '');
+
+  console.log('host method colon calls');
+  const hm = E.insert({ class: 'Script', name: 'Colon' });
+  hm.props.Source = [
+    'local Players = game:GetService("Players")',
+    'local bp = workspace:FindFirstChild("Baseplate")',
+    'local hit = 0',
+    'if bp then',
+    '  bp.Touched:Connect(function() hit = hit + 1 end)',
+    '  bp.Touched:Fire()',
+    'end',
+    'return type(Players), Players.Name, bp ~= nil, hit'
+  ].join('\n');
+  const rhm = E.runScriptNode(hm);
+  ok(rhm.ok && rhm.value && rhm.value[0] === 'Players', 'game:GetService("Players") colon call returns the service' + (rhm.ok ? '' : ' (' + rhm.error + ')'));
+  ok(rhm.ok && rhm.value[2] === true, 'workspace:FindFirstChild colon call works');
+  ok(rhm.ok && rhm.value[3] === 1, 'Event:Connect receives the real callback (fires once)');
+
+  console.log('datastores');
+  global.localStorage.setItem('rsa:ds:Preload', JSON.stringify({ hp: 7, tag: 'saved' }));
+  const dsNode = E.insert({ class: 'Script', name: 'DSTest' });
+  dsNode.props.Source = [
+    'local DSS = game:GetService("DataStoreService")',
+    'local ds = DSS:GetDataStore("Stats")',
+    'ds:SetAsync("coins", 42)',
+    'ds:IncrementAsync("clicks", 1)',
+    'ds:SetAsync("profile", { level = 3, tag = "vip" })',
+    'ds:UpdateAsync("xp", function(v) return (v or 0) + 5 end)',
+    'local pre = DSS:GetDataStore("Preload")',
+    'local hp = pre:GetAsync("hp")',
+    'local coins = ds:GetAsync("coins")',
+    'local prof = ds:GetAsync("profile")',
+    'return hp, coins, prof.level, ds:GetAsync("clicks"), ds:GetAsync("xp")'
+  ].join('\n');
+  const rds = E.runScriptNode(dsNode);
+  ok(rds && rds.ok, 'datastore script runs' + (rds && rds.ok ? '' : ' (' + (rds && rds.error) + ')'));
+  ok(rds.ok && rds.value && rds.value[0] === 7, 'DataStore cold-loads values persisted earlier');
+  ok(rds.ok && rds.value[1] === 42 && rds.value[2] === 3 && rds.value[3] === 1, 'GetAsync/SetAsync/IncrementAsync roundtrip');
+  ok(rds.ok && rds.value[4] === 5, 'UpdateAsync callback works');
+  const dsRaw = global.localStorage.getItem('rsa:ds:Stats');
+  const dsParsed = dsRaw ? JSON.parse(dsRaw) : {};
+  ok(dsParsed.coins === 42 && dsParsed.clicks === 1, 'DataStore writes persist to localStorage');
+  ok(dsParsed.profile && dsParsed.profile.level === 3 && dsParsed.profile.tag === 'vip', 'table values persist as plain JSON');
+  ok(dsParsed.xp === 5, 'UpdateAsync result persisted');
+
   console.log('recents snapshot');
   E.emit('change');
   await new Promise((res) => setTimeout(res, 1500));
