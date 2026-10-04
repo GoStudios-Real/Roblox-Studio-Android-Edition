@@ -189,13 +189,32 @@ button{cursor:pointer;border:0;background:none}
 
 /* ---------------- Center ---------------- */
 #center{display:flex;flex-direction:column;min-width:0;gap:8px}
-.viewtabs{display:flex;gap:4px;overflow-x:auto;padding:2px}
+.viewtabs{
+  display:flex;gap:4px;overflow-x:auto;padding:2px;flex:none;
+  touch-action:pan-x;overscroll-behavior-x:contain;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent
+}
+.viewtabs::-webkit-scrollbar{height:6px}
+.viewtabs::-webkit-scrollbar-track{background:transparent}
+.viewtabs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:99px}
+.viewtabs::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.42)}
+.viewtabs.is-dragging{cursor:grabbing}
 .vtab{
   display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:12.5px;
-  background:var(--panel);border:1px solid var(--line);color:var(--txt2);white-space:nowrap
+  background:var(--panel);border:1px solid var(--line);color:var(--txt2);white-space:nowrap;
+  flex:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
+  touch-action:pan-x;cursor:grab
 }
+.vtab:hover{border-color:var(--line2);color:var(--txt)}
 .vtab.active{color:var(--txt);border-color:var(--accent);background:rgba(0,162,255,.14)}
 .vtab.script-tab{color:#8fe6a5}
+.vtab.dragging{opacity:.4;transform:scale(.96);border-style:dashed;border-color:var(--accent);cursor:grabbing}
+.vtab-x{
+  display:grid;place-items:center;width:17px;height:17px;margin-left:3px;padding:0;flex:none;
+  border:none;border-radius:50%;background:rgba(255,255,255,.1);color:var(--txt3);
+  font-size:13px;line-height:1;cursor:pointer
+}
+.vtab-x:hover{background:rgba(255,90,90,.45);color:#fff}
 #stageWrap{position:relative;flex:1;min-height:0;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:#0b0d12;box-shadow:var(--shadow)}
 .stage{position:absolute;inset:0;display:none}
 .stage.active{display:block}

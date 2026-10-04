@@ -539,8 +539,22 @@
   }
 
   const scriptTabs = [];
+  let tabOrder = ['place'];
+  let tabSuppressUntil = 0;
+  let lastPointerType = 'mouse';
+  let draftSeq = 0;
+
+  function orderedDocs() {
+    const all = [{ id: 'place', place: true, name: 'Place' }].concat(scriptTabs);
+    all.forEach((d) => { if (tabOrder.indexOf(d.id) === -1) tabOrder.push(d.id); });
+    tabOrder = tabOrder.filter((id) => all.some((d) => d.id === id));
+    const byId = {};
+    all.forEach((d) => { byId[d.id] = d; });
+    return tabOrder.map((id) => byId[id]);
+  }
+
   function openScript(node, name, source) {
-    const id = node ? node.id : 'draft_' + (scriptTabs.length + 1);
+    const id = node ? node.id : 'draft_' + (++draftSeq);
     let tab = scriptTabs.find((t) => t.id === id);
     if (!tab) { tab = { id, name: name || (node ? node.name : 'Script'), node, source: source !== undefined ? source : (node ? node.props.Source : '-- new script\nprint("hello")') }; scriptTabs.push(tab); }
     else if (source !== undefined) tab.source = source;
@@ -552,7 +566,7 @@
     E().state.activeDoc = id;
     const tab = scriptTabs.find((t) => t.id === id);
     $$('.stage').forEach((s) => s.classList.remove('active'));
-    $('#viewTabs .vtab').forEach((t) => t.classList.toggle('active', t.dataset.doc === id));
+    $$('#viewTabs .vtab').forEach((t) => t.classList.toggle('active', t.dataset.doc === id));
     if (id === 'place') { $('#viewport').classList.add('active'); }
     else if (tab) {
       $('#scriptStage').classList.add('active');
@@ -562,22 +576,153 @@
       ta.focus();
     }
     renderViewTabs();
+    scrollTabIntoView(id);
+  }
+  function scrollTabIntoView(id) {
+    const host = $('#viewTabs');
+    if (!host || !host.scrollWidth || host.scrollWidth <= host.clientWidth + 1) return;
+    const el = $$('.vtab', host).find((t) => t.dataset.doc === id);
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+  }
+  function closeTab(id) {
+    const i = scriptTabs.findIndex((t) => t.id === id);
+    if (i < 0) return;
+    scriptTabs.splice(i, 1);
+    tabOrder = tabOrder.filter((x) => x !== id);
+    if (E().state.activeDoc === id) setActiveTab('place');
+    renderViewTabs();
+    toast('Script tab closed', 'info');
+  }
+  function moveTab(id, beforeId) {
+    if (!id || id === beforeId) return;
+    orderedDocs();
+    tabOrder = tabOrder.filter((x) => x !== id);
+    const at = tabOrder.indexOf(beforeId);
+    tabOrder.splice(at < 0 ? tabOrder.length : at, 0, id);
+    renderViewTabs();
+    scrollTabIntoView(id);
   }
   function renderViewTabs() {
     const host = $('#viewTabs');
-    host.innerHTML = '<button class="vtab ' + (E().state.activeDoc === 'place' ? 'active' : '') + '" data-doc="place">🏠 Place</button>' +
-      scriptTabs.map((t) => '<button class="vtab script-tab ' + (E().state.activeDoc === t.id ? 'active' : '') + '" data-doc="' + t.id + '">📜 ' + esc(t.name) + (t.dirty ? ' •' : '') + '</button>').join('');
-    $$('.vtab', host).forEach((b) => b.addEventListener('click', () => setActiveTab(b.dataset.doc)));
+    const active = E().state.activeDoc;
+    host.innerHTML = orderedDocs().map((d) => {
+      const cls = 'vtab' + (d.place ? '' : ' script-tab') + (active === d.id ? ' active' : '');
+      const label = d.place ? '🏠 Place' : '📜 ' + esc(d.name) + (d.dirty ? ' •' : '');
+      const x = d.place ? '' : '<span class="vtab-x" data-close="' + esc(d.id) + '" title="Close tab">×</span>';
+      return '<button class="' + cls + '" data-doc="' + esc(d.id) + '">' + label + x + '</button>';
+    }).join('');
+    $$('.vtab', host).forEach((b) => b.addEventListener('click', (e) => {
+      if (Date.now() < tabSuppressUntil) return;
+      if (e.target && e.target.closest && e.target.closest('[data-close]')) return;
+      setActiveTab(b.dataset.doc);
+    }));
+    $$('[data-close]', host).forEach((x) => x.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeTab(x.dataset.close);
+    }));
     $$('.vtab.script-tab', host).forEach((b) => {
       b.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        const id = b.dataset.doc;
-        const i = scriptTabs.findIndex((t) => t.id === id);
-        if (i >= 0) { scriptTabs.splice(i, 1); if (E().state.activeDoc === id) setActiveTab('place'); renderViewTabs(); toast('Script tab closed', 'info'); }
+        if (Date.now() < tabSuppressUntil || lastPointerType === 'touch') return;
+        closeTab(b.dataset.doc);
       });
     });
   }
   function currentScript() { return scriptTabs.find((t) => t.id === E().state.activeDoc) || null; }
+
+  /* --- tab strip: horizontal scroll + drag & drop reorder (mouse + touch) --- */
+  function initTabStrip() {
+    const host = $('#viewTabs');
+    if (!host || host.dataset.tabwired) return;
+    host.dataset.tabwired = '1';
+    let drag = null;
+    let holdTimer = 0;
+    let rafId = 0;
+    const clearHold = () => { if (holdTimer) { clearTimeout(holdTimer); holdTimer = 0; } };
+
+    const reorderDom = (btn, x) => {
+      const tabs = $$('.vtab', host).filter((t) => t !== btn);
+      for (const t of tabs) {
+        const r = t.getBoundingClientRect();
+        if (x < r.left + r.width / 2) {
+          if (t.previousSibling !== btn) host.insertBefore(btn, t);
+          return;
+        }
+      }
+      if (host.lastElementChild !== btn) host.appendChild(btn);
+    };
+    const edgeScroll = () => {
+      rafId = 0;
+      if (!drag || drag.mode !== 'drag') return;
+      const r = host.getBoundingClientRect();
+      if (drag.x < r.left + 40) host.scrollLeft -= 10;
+      else if (drag.x > r.right - 40) host.scrollLeft += 10;
+      if (drag.mode === 'drag') { reorderDom(drag.btn, drag.x); rafId = requestAnimationFrame(edgeScroll); }
+    };
+    const startDrag = () => {
+      if (!drag || drag.mode === 'drag') return;
+      drag.mode = 'drag';
+      clearHold();
+      tabSuppressUntil = Date.now() + 400;
+      drag.btn.classList.add('dragging');
+      host.classList.add('is-dragging');
+      if (document.body) document.body.style.userSelect = 'none';
+      try { drag.btn.setPointerCapture(drag.pointerId); } catch (e) { /* touch captures implicitly */ }
+      if (!rafId) rafId = requestAnimationFrame(edgeScroll);
+    };
+
+    host.addEventListener('pointerdown', (e) => {
+      lastPointerType = e.pointerType || 'mouse';
+      if (e.button !== undefined && e.button !== 0) return;
+      const btn = e.target && e.target.closest ? e.target.closest('.vtab') : null;
+      if (!btn || !host.contains(btn)) return;
+      if (e.target.closest('[data-close]')) return;
+      clearHold();
+      drag = { btn, pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, x: e.clientX, mode: null, type: lastPointerType };
+      if (drag.type !== 'touch') { try { btn.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ } }
+      else holdTimer = setTimeout(() => { if (drag && drag.mode === null) startDrag(); }, 350);
+    });
+    host.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.pointerId) return;
+      drag.x = e.clientX;
+      if (drag.mode !== 'drag') {
+        const dx = e.clientX - drag.startX, dy = e.clientY - drag.startY;
+        if (drag.type === 'touch') {
+          if (Math.abs(dx) > 10 || Math.abs(dy) > 10) clearHold(); // finger moved early: let the strip scroll
+        } else if (Math.abs(dx) > 6 && Math.abs(dx) >= Math.abs(dy)) startDrag();
+        if (drag.mode !== 'drag') return;
+      }
+      reorderDom(drag.btn, e.clientX);
+    });
+    const endDrag = (e) => {
+      if (!drag || (e && e.pointerId !== undefined && e.pointerId !== drag.pointerId)) return;
+      clearHold();
+      if (drag.mode === 'drag') {
+        drag.btn.classList.remove('dragging');
+        host.classList.remove('is-dragging');
+        if (document.body) document.body.style.userSelect = '';
+        tabOrder = $$('.vtab', host).map((t) => t.dataset.doc).filter(Boolean);
+        tabSuppressUntil = Date.now() + 350;
+        renderViewTabs();
+        toast('Tab order updated', 'info');
+      }
+      drag = null;
+    };
+    host.addEventListener('pointerup', endDrag);
+    host.addEventListener('pointercancel', endDrag);
+    host.addEventListener('touchmove', (e) => {
+      if (drag && drag.mode === 'drag') e.preventDefault(); // block native pan only while dragging
+    }, { passive: false });
+    host.addEventListener('wheel', (e) => {
+      if (host.scrollWidth <= host.clientWidth + 1) return;
+      let d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (!d) return;
+      if (e.deltaMode === 1) d *= 16;
+      else if (e.deltaMode === 2) d *= host.clientWidth;
+      e.preventDefault();
+      host.scrollLeft += d;
+    }, { passive: false });
+  }
 
   function updateEditor() {
     const ta = $('#seInput');
@@ -1323,6 +1468,7 @@
     renderTemplates($('#templateGrid'), 'templates');
     renderGroups();
     renderOutput();
+    initTabStrip();
     renderViewTabs();
     updateSyncChip();
     setStatus();
@@ -1336,6 +1482,7 @@
     renderTemplates, renderStart, showStart, hideStart, openPanel, toggleDock, dialog, openSettings,
     openGameSettings, publishNow, updateSyncChip, runCommand,
     openScript, runCurrent, setStatus, action, applyTemplate, download, openFile, quickAI, runAI,
+    moveTab, orderedTabIds: () => orderedDocs().map((d) => d.id),
     setTheme, focusAI, toastCount: () => 0
   };
 })(typeof window !== 'undefined' ? window : globalThis);

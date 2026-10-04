@@ -5,6 +5,7 @@
    Run:  node tools/test_app.js                     (also runs tools/test_lua.js)
 */
 const path = require('path');
+const fs = require('fs');
 const assert = require('assert');
 
 /* ---------------- browser stubs ---------------- */
@@ -223,6 +224,32 @@ function ok(cond, label) {
   await new Promise((res) => setTimeout(res, 1500));
   ok(global.Engine.state.recent.length >= 1, 'recent entry recorded');
   ok(!!global.localStorage.getItem('rsa:draft'), 'draft autosaved');
+
+  console.log('tab strip scroll + drag/drop');
+  const uiSrc = fs.readFileSync(path.join(jsDir, 'ui.js'), 'utf8');
+  const cssSrc = fs.readFileSync(path.join(__dirname, '..', 'docs', 'app', 'css', 'app.css'), 'utf8');
+  ok(/host\.addEventListener\('wheel'/.test(uiSrc), 'mouse wheel scrolls the tab strip horizontally');
+  ok(/addEventListener\('touchmove'[\s\S]{0,150}preventDefault\(/.test(uiSrc), 'native pan blocked only while dragging (strip still touch-scrollable)');
+  ok(/setPointerCapture/.test(uiSrc) && /pointercancel/.test(uiSrc), 'pointer capture + cancel handling for drag gestures');
+  ok(/scrollIntoView/.test(uiSrc), 'active/opened tab auto-scrolled into view');
+  ok(/\$\$\('#viewTabs \.vtab'\)/.test(uiSrc), 'tab active classes use $$ (old $().forEach threw on every click)');
+  ok(/function initTabStrip\(\)/.test(uiSrc), 'tab strip drag/scroll wired at boot');
+  ok(/touch-action:pan-x/.test(cssSrc) && /\.viewtabs\{[^}]*overflow-x:auto/.test(cssSrc), 'strip styled for touch panning + overflow scroll');
+  ok(/\.vtab\.dragging/.test(cssSrc) && /\.vtab-x/.test(cssSrc), 'dragging + close-button styles present');
+  const order0 = global.UI.orderedTabIds();
+  ok(order0[0] === 'place', 'place tab first by default');
+  global.UI.openScript(null, 'TabA', 'print("a")');
+  global.UI.openScript(null, 'TabB', 'print("b")');
+  const order1 = global.UI.orderedTabIds();
+  ok(order1.length === order0.length + 2, 'two script tabs opened (' + order1.join(',') + ')');
+  const idA = order1[order1.length - 2], idB = order1[order1.length - 1];
+  ok(idA !== idB, 'draft tab ids stay unique after other tabs were open');
+  global.UI.moveTab(idB, idA);
+  ok(global.UI.orderedTabIds().indexOf(idB) < global.UI.orderedTabIds().indexOf(idA), 'moveTab reorders tabs');
+  global.UI.moveTab(idB, 'place');
+  ok(global.UI.orderedTabIds()[0] === idB, 'moveTab can drop a tab before Place');
+  global.UI.moveTab(idB, idB);
+  ok(global.UI.orderedTabIds()[0] === idB, 'moveTab with same id is a no-op');
 
   console.log('\n' + passed + ' app smoke checks passed');
 })().catch((e) => {
