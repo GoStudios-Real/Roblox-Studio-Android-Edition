@@ -45,7 +45,7 @@ public class MainActivity extends Activity {
 
     private static final String TAG = "StudioAE";
     private static final String APP_URL = "file:///android_asset/docs/app/index.html";
-    static final String VERSION_NAME = "1.0.0";
+    static final String VERSION_NAME = "1.1.0";
 
     private WebView web;
 

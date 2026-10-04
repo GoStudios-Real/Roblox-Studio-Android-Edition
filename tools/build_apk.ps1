@@ -1,4 +1,4 @@
-﻿# Builds a signed Android APK of Roblox Studio Android Edition
+# Builds a signed Android APK of Roblox Studio Android Edition
 # without Gradle, using the plain Android SDK toolchain:
 #   aapt2 (compile/link) -> javac -> d8 -> zipalign -> apksigner
 #
@@ -9,7 +9,7 @@
 #   tools/opencloud.key       Open Cloud API key baked into the APK (gitignored)
 #   android/AndroidManifest.xml, java sources, res/
 # Output:
-#   dist/RobloxStudioAE-1.0.0.apk   (also signed, ready for release upload)
+#   dist/RobloxStudioAE-1.1.0.apk   (also signed, ready for release upload)
 
 $ErrorActionPreference = 'Stop'
 
@@ -28,7 +28,7 @@ $JavaDir  = Join-Path $Root 'android\app\src\main\java'
 $Assets   = Join-Path $Root 'android\app\src\main\assets'
 $Out      = Join-Path $Root 'android\out'
 
-$Version  = '1.0.0'
+$Version  = '1.1.0'
 $ApkName  = "RobloxStudioAE-$Version.apk"
 $Store    = Join-Path $Root 'android\rsa.keystore'
 $Alias    = 'rsa'
@@ -73,7 +73,7 @@ if ($LASTEXITCODE -ne 0) { throw 'aapt2 compile failed' }
 $Base = Join-Path $Out 'base.apk'
 & $Aapt2 link -o $Base -I $Jar --manifest $Manifest `
     --min-sdk-version 26 --target-sdk-version 35 `
-    --version-code 1 --version-name $Version `
+    --version-code 2 --version-name $Version `
     -A $Assets (Join-Path $Out 'res.zip')
 if ($LASTEXITCODE -ne 0) { throw 'aapt2 link failed' }
 
@@ -95,7 +95,7 @@ if ($LASTEXITCODE -ne 0) { throw 'd8 failed' }
 
 # 6. normalise zip entry names + inject classes.dex --------------------------
 # (aapt2 on Windows writes nested assets with backslashes, which Android
-#  cannot open â€” fix_zip.py rewrites everything to forward slashes.)
+#  cannot open — fix_zip.py rewrites everything to forward slashes.)
 Write-Host '== zip fixup ==' -ForegroundColor Cyan
 $Fixed = Join-Path $Out 'fixed.apk'
 python (Join-Path $Root 'tools\fix_zip.py') $Base $Fixed --add (Join-Path $DexOut 'classes.dex')
