@@ -897,11 +897,24 @@
   }
 
   /* ---------------- start screen ---------------- */
+  function whenLabel(r) {
+    const ts = typeof r.when === 'number' ? r.when : 0;
+    if (!ts) return esc(r.when || 'earlier');
+    const d = Date.now() - ts;
+    let s;
+    if (d < 60000) s = 'just now';
+    else if (d < 3600000) s = Math.floor(d / 60000) + 'm ago';
+    else if (d < 86400000) s = Math.floor(d / 3600000) + 'h ago';
+    else if (d < 604800000) s = Math.floor(d / 86400000) + 'd ago';
+    else { try { s = new Date(ts).toLocaleDateString(); } catch (e) { s = 'earlier'; } }
+    return esc(s);
+  }
+
   function renderStart() {
     renderTemplates($('#startTemplates'), 'start');
     const recents = E().state.recent;
     $('#recentList').innerHTML = recents.length ? recents.map((r, i) =>
-      '<div class="li" data-i="' + i + '"><div class="lav">📁</div><div class="lmain"><div class="lname">' + esc(r.name) + '</div><div class="lmeta">' + esc(r.when) + ' · ' + esc(r.count) + ' instances</div></div>' +
+      '<div class="li" data-i="' + i + '"><div class="lav">📁</div><div class="lmain"><div class="lname">' + esc(r.name) + '</div><div class="lmeta">' + whenLabel(r) + ' · ' + esc(r.count) + ' instances</div></div>' +
       '<div class="lact"><button class="mini" data-act="load" data-i="' + i + '">Open</button></div></div>').join('') :
       '<div class="muted small">No recent places yet — create one!</div>';
     $$('#recentList [data-act]').forEach((b) => b.addEventListener('click', () => {

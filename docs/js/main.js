@@ -53,15 +53,6 @@
   }
 
   /* ---------------- persistence helpers ---------------- */
-  function timeWhen(ts) {
-    const d = Date.now() - ts;
-    if (d < 60000) return 'just now';
-    if (d < 3600000) return Math.floor(d / 60000) + 'm ago';
-    if (d < 86400000) return Math.floor(d / 3600000) + 'h ago';
-    if (d < 604800000) return Math.floor(d / 86400000) + 'd ago';
-    try { return new Date(ts).toLocaleDateString(); } catch (e) { return 'earlier'; }
-  }
-
   function countNodes() {
     let c = 0;
     global.Engine.walk(global.Engine.state.place, () => { c++; });
