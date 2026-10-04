@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const root = path.join(__dirname, '..', 'docs', 'js');
+const root = path.join(__dirname, '..', 'docs', 'app', 'js');
 const ctx = { window: {}, globalThis: {}, performance: { now: () => Date.now() }, console };
 ctx.window = ctx;
 vm.createContext(ctx);

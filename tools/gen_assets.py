@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Generate PNG assets for Roblox Studio Android Edition.
 
 Outputs:
-  docs/assets/icon-192.png, icon-512.png, icon-maskable-512.png,
+  docs/app/assets/icon-192.png, icon-512.png, icon-maskable-512.png,
          apple-touch-icon.png, favicon-16.png, favicon-32.png,
          og.png (1200x630), feature-graphic.png (1024x500)
   android/app/src/main/res/mipmap-*/ic_launcher.png  (if that tree exists)
@@ -15,7 +15,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DOCS_ASSETS = os.path.join(ROOT, "docs", "assets")
+DOCS_ASSETS = os.path.join(ROOT, "docs", "app", "assets")
 ANDROID_RES = os.path.join(ROOT, "android", "app", "src", "main", "res")
 
 TOP = (30, 136, 255)      # #1e88ff
@@ -143,12 +143,12 @@ def banner(w=1200, h=630):
     d.text((x, h // 2 - 104), "Roblox Studio", font=font(84, bold=True), fill=LIGHT)
     d.text((x, h // 2 - 14), "Android Edition", font=font(84, bold=True), fill=TOP)
     d.text((x, h // 2 + 92),
-           "3D viewport  ·  Lua scripting  ·  AI Builder  ·  Toolbox",
+           "3D viewport  Â·  Lua scripting  Â·  AI Builder  Â·  Toolbox",
            font=font(30), fill=MUTED)
     d.text((x, h // 2 + 134),
-           "Templates  ·  Group games  ·  Open Cloud publish",
+           "Templates  Â·  Group games  Â·  Open Cloud publish",
            font=font(30), fill=MUTED)
-    d.text((x, h // 2 + 196), "Android APK  ·  Web app  ·  PWA",
+    d.text((x, h // 2 + 196), "Android APK  Â·  Web app  Â·  PWA",
            font=font(30, bold=True), fill=GREEN)
     return img
 

@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends Activity {
 
     private static final String TAG = "StudioAE";
-    private static final String APP_URL = "file:///android_asset/docs/index.html";
+    private static final String APP_URL = "file:///android_asset/docs/app/index.html";
     static final String VERSION_NAME = "1.0.0";
 
     private WebView web;

@@ -2,306 +2,220 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roblox Studio Android Edition — build Roblox games on Android &amp; any browser</title>
+<meta name="description" content="A Studio-style game editor for Android, Windows, macOS and the browser: 3D viewport, Lua scripting, AI Builder, 12 templates and one-click publish to Roblox via Open Cloud.">
+<meta property="og:title" content="Roblox Studio Android Edition">
+<meta property="og:description" content="Build, script and publish Roblox games from your phone or browser. No Roblox account sign-in needed.">
+<meta property="og:image" content="https://gostudios-real.github.io/Roblox-Studio-Android-Edition/app/assets/og.png">
 <meta name="theme-color" content="#0f1115">
-<meta name="description" content="Roblox Studio Android Edition — a full Roblox Studio style editor for Android, web and desktop: 3D viewport, Lua scripting, AI Builder/Coder, Toolbox, templates, group games and publish to Roblox.">
-<title>Roblox Studio Android Edition</title>
-<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="css/app.css">
+<link rel="icon" href="app/assets/favicon-32.png" sizes="32x32">
+<link rel="icon" href="app/assets/icon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#0f1115; --bg2:#14171d; --bg3:#1a1e26;
+  --line:#262b36; --line2:#333a49;
+  --txt:#e7ecf3; --txt2:#9aa4b5; --txt3:#6c7688;
+  --accent:#00a2ff; --accent2:#4cc2ff; --ok:#2ecc71;
+  --r-lg:18px; --r-md:12px; --r-sm:8px;
+  --shadow:0 12px 40px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:
+    radial-gradient(900px 500px at 85% -10%,rgba(0,162,255,.14),transparent 60%),
+    radial-gradient(700px 500px at 5% 110%,rgba(76,194,255,.08),transparent 60%),
+    var(--bg);
+  color:var(--txt);
+  font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* header */
+header{position:sticky;top:0;z-index:50;background:rgba(15,17,21,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.hd{display:flex;align-items:center;gap:14px;height:60px}
+.hd img{width:30px;height:30px}
+.hd b{font-size:15px;letter-spacing:.2px}
+.hd b span{color:var(--accent2)}
+.hd nav{margin-left:auto;display:flex;gap:6px;align-items:center}
+.hd nav a{color:var(--txt2);font-size:14px;padding:7px 11px;border-radius:var(--r-sm)}
+.hd nav a:hover{background:rgba(255,255,255,.06);color:var(--txt);text-decoration:none}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:var(--r-md);font-size:15px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{text-decoration:none;transform:translateY(-1px)}
+.btn.primary{background:var(--accent);color:#04121e;box-shadow:0 8px 26px rgba(0,162,255,.35)}
+.btn.primary:hover{background:var(--accent2)}
+.btn.ghost{background:rgba(255,255,255,.05);border-color:var(--line2);color:var(--txt)}
+.btn.ghost:hover{background:rgba(255,255,255,.1)}
+.btn.sm{padding:8px 14px;font-size:14px}
+
+/* hero */
+.hero{padding:74px 0 40px;text-align:center}
+.badge{display:inline-block;font-size:12.5px;color:var(--accent2);border:1px solid var(--line2);background:rgba(0,162,255,.08);padding:5px 13px;border-radius:999px;margin-bottom:22px}
+.hero h1{font-size:clamp(30px,5.4vw,52px);line-height:1.12;margin:0 0 16px;letter-spacing:-.5px}
+.hero h1 em{font-style:normal;color:var(--accent2)}
+.hero p.sub{font-size:clamp(16px,2.2vw,19px);color:var(--txt2);max-width:660px;margin:0 auto 30px}
+.cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.cta-note{margin-top:14px;font-size:13px;color:var(--txt3)}
+
+/* shot */
+.shot{margin:52px auto 0;max-width:940px;border:1px solid var(--line2);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);background:var(--bg2)}
+.shot .bar{display:flex;gap:7px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg3)}
+.shot .bar i{width:11px;height:11px;border-radius:50%;background:#3a4150;display:inline-block}
+.shot .bar i:nth-child(1){background:#ff5f57}.shot .bar i:nth-child(2){background:#f1c40f}.shot .bar i:nth-child(3){background:#2ecc71}
+.shot .bar span{margin-left:10px;font-size:12px;color:var(--txt3);font-family:ui-monospace,Consolas,monospace}
+.shot img{display:block;width:100%}
+
+/* sections */
+section{padding:66px 0 10px}
+h2{font-size:clamp(24px,3.4vw,34px);text-align:center;margin:0 0 10px;letter-spacing:-.3px}
+.lead{text-align:center;color:var(--txt2);max-width:640px;margin:0 auto 36px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px}
+.card .ic{font-size:22px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,162,255,.1);border:1px solid rgba(0,162,255,.25);border-radius:var(--r-md);margin-bottom:14px}
+.card h3{margin:0 0 7px;font-size:16.5px}
+.card p{margin:0;font-size:14.5px;color:var(--txt2)}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;counter-reset:step}
+.step{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;position:relative}
+.step::before{counter-increment:step;content:counter(step);position:absolute;top:-14px;left:20px;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#04121e;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+.step h3{margin:6px 0 7px;font-size:15.5px}
+.step p{margin:0;font-size:14px;color:var(--txt2)}
+
+/* faq */
+.faq{max-width:760px;margin:0 auto}
+.faq details{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-md);padding:16px 18px;margin-bottom:10px}
+.faq summary{cursor:pointer;font-weight:600;font-size:15.5px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.faq summary::after{content:"+";color:var(--accent2);font-size:20px;font-weight:400}
+.faq details[open] summary::after{content:"−"}
+.faq p{margin:12px 0 2px;color:var(--txt2);font-size:14.5px}
+
+/* dl band */
+.band{margin-top:66px;background:linear-gradient(135deg,rgba(0,162,255,.16),rgba(76,194,255,.06)),var(--bg2);border:1px solid var(--line2);border-radius:22px;padding:44px 30px;text-align:center}
+.band h2{margin-bottom:8px}
+.band p{color:var(--txt2);margin:0 auto 26px;max-width:560px}
+.specs{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+.spec{font-size:13px;color:var(--txt2);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:6px 14px}
+
+footer{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 44px;color:var(--txt3);font-size:13.5px}
+.foot{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.foot nav{display:flex;gap:16px;flex-wrap:wrap}
+@media (max-width:640px){.hd nav a:not(.btn){display:none}.hero{padding-top:52px}}
+</style>
 </head>
 <body>
-<div id="app" class="theme-dark">
 
-  <!-- ===== Title bar ===== -->
-  <header id="titlebar">
-    <div class="tb-left">
-      <img class="tb-logo" src="assets/logo.svg" alt="">
-      <div class="tb-title">
-        <span class="tb-name">Roblox Studio <b>Android Edition</b></span>
-        <span class="tb-place" id="tbPlace">Untitled Place</span>
-      </div>
-      <nav class="tb-menu" id="tbMenu">
-        <button data-menu="file">File</button>
-        <button data-menu="edit">Edit</button>
-        <button data-menu="insert">Insert</button>
-        <button data-menu="view">View</button>
-        <button data-menu="plugins">Plugins</button>
-        <button data-menu="help">Help</button>
-      </nav>
+<header>
+  <div class="wrap hd">
+    <img src="app/assets/logo.svg" alt="">
+    <b>Roblox Studio <span>Android Edition</span></b>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn primary sm" href="app/">Open Web App</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="hero">
+    <div class="badge">v1.0.0 · Android app + web app · free</div>
+    <h1>Build Roblox games<br><em>from your phone or browser</em></h1>
+    <p class="sub">A Studio-style editor with a 3D viewport, Lua scripting, AI Builder, game templates and one-click publish to Roblox. Works on Android 8+, Windows, macOS and any modern browser.</p>
+    <div class="cta">
+      <a class="btn primary" href="app/">Launch the editor</a>
+      <a class="btn ghost" href="https://github.com/GoStudios-Real/Roblox-Studio-Android-Edition/releases/download/v1.0.0/RobloxStudioAE-1.0.0.apk">Download APK</a>
     </div>
-    <div class="tb-right">
-      <button class="chip" id="btnSync" title="Sync / Publish to Roblox"><span class="dot"></span><span id="syncLabel">Local</span></button>
-      <button class="chip account" id="btnAccount" title="Credentials / Open Cloud API key">
-        <span id="accountLabel">🔑 API key</span>
-      </button>
-      <button class="ico" id="btnSettings" title="Settings">⚙</button>
-      <button class="ico" id="btnTheme" title="Toggle light / dark">◐</button>
-    </div>
-  </header>
+    <div class="cta-note">No Roblox account sign-in required — publishing uses your own Open Cloud API key.</div>
 
-  <!-- ===== Ribbon ===== -->
-  <nav id="ribbon">
-    <div class="rtabs" id="rtabs">
-      <button class="rtab active" data-tab="home">Home</button>
-      <button class="rtab" data-tab="model">Model</button>
-      <button class="rtab" data-tab="ui">UI</button>
-      <button class="rtab" data-tab="script">Scripting</button>
-      <button class="rtab" data-tab="test">Test</button>
-      <button class="rtab" data-tab="view">View</button>
-      <button class="rtab" data-tab="plugins">Plugins</button>
-      <span class="rtab-spacer"></span>
-      <button class="rtab slim" data-tab="help">Help</button>
-    </div>
-    <div class="rbody" id="rbody"><!-- groups injected --></div>
-  </nav>
-
-  <!-- ===== Workspace ===== -->
-  <main id="workspace">
-
-    <!-- Left dock -->
-    <section id="leftDock" class="dock">
-      <div class="dtabs" id="leftTabs">
-        <button class="dtab active" data-panel="explorer">Explorer</button>
-        <button class="dtab" data-panel="toolbox">Toolbox</button>
-        <button class="dtab" data-panel="templates">Games</button>
-        <button class="dtab" data-panel="groups">Groups</button>
-        <div class="dtabs-tools">
-          <button class="ico sm" id="leftCollapse" title="Collapse panel">⟨</button>
-        </div>
-      </div>
-      <div class="dcontent">
-        <div class="dpanel active" data-panel="explorer">
-          <div class="panel-search"><input id="explorerSearch" placeholder="Filter instances…"></div>
-          <div id="explorerTree" class="tree"></div>
-          <div class="panel-foot">
-            <button class="mini" data-add="Part">+ Part</button>
-            <button class="mini" data-add="Script">+ Script</button>
-            <button class="mini" data-add="Folder">+ Folder</button>
-            <button class="mini danger" id="btnDeleteSel">🗑</button>
-          </div>
-        </div>
-
-        <div class="dpanel" data-panel="toolbox">
-          <div class="panel-search">
-            <input id="toolboxSearch" placeholder="Search toolbox…">
-          </div>
-          <div class="chips" id="toolboxCats"></div>
-          <div id="toolboxGrid" class="cardgrid"></div>
-          <div class="panel-foot"><span class="muted" id="toolboxNote">Built-in asset library</span></div>
-        </div>
-
-        <div class="dpanel" data-panel="templates">
-          <div class="panel-search"><input id="templateSearch" placeholder="Search game templates…"></div>
-          <div id="templateGrid" class="cardgrid"></div>
-        </div>
-
-        <div class="dpanel" data-panel="groups">
-          <div class="group-head">
-            <div class="group-avatar" id="grpAvatar">G</div>
-            <div>
-              <div class="group-name" id="grpName">No group selected</div>
-              <div class="muted small" id="grpMeta">Local group games</div>
-            </div>
-          </div>
-          <div class="chips" id="groupCats"></div>
-          <div id="groupList" class="list"></div>
-          <div class="panel-foot">
-            <button class="mini" id="btnNewGroupGame">+ Group Game</button>
-            <button class="mini" id="btnRefreshGroups">↻ Refresh</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Center -->
-    <section id="center">
-      <div id="viewTabs" class="viewtabs">
-        <button class="vtab active" data-doc="place">🏠 Place</button>
-      </div>
-
-      <div id="stageWrap">
-        <!-- Viewport -->
-        <div id="viewport" class="stage active">
-          <canvas id="vp"></canvas>
-          <div class="vp-toolbar" id="vpToolbar">
-            <button class="tbtn active" data-tool="select" title="Select">➤</button>
-            <button class="tbtn" data-tool="move" title="Move">✥</button>
-            <button class="tbtn" data-tool="rotate" title="Rotate">⟳</button>
-            <button class="tbtn" data-tool="scale" title="Scale">⤢</button>
-            <span class="tsep"></span>
-            <button class="tbtn" data-snap="0">Grid: off</button>
-            <span class="tsep"></span>
-            <button class="tbtn" id="btnSnapY">↑Y</button>
-            <button class="tbtn" id="btnFrame">⌖ Frame</button>
-            <button class="tbtn" id="btnGrid">▦ Grid</button>
-          </div>
-          <div class="vp-badge" id="vpBadge">Editor</div>
-          <div class="vp-axis" id="vpAxis"></div>
-          <div class="vp-hint" id="vpHint">Drag to orbit · Wheel / pinch to zoom · Tap a part to select</div>
-          <!-- Play mode HUD -->
-          <div id="playHud" class="play-hud hidden">
-            <div class="play-title"><span class="pulse"></span> Play Solo</div>
-            <div class="play-stats" id="playStats"></div>
-            <button class="btn sm accent" id="btnStopPlay">■ Stop</button>
-          </div>
-          <!-- Touch controls (play mode) -->
-          <div id="touchPad" class="touchpad hidden">
-            <div class="tp-base" id="tpBase"><div class="tp-knob" id="tpKnob"></div></div>
-            <button class="tp-jump" id="tpJump" type="button">JUMP</button>
-          </div>
-        </div>
-
-        <!-- Script editor -->
-        <div id="scriptStage" class="stage">
-          <div class="se-wrap">
-            <div class="se-gutter" id="seGutter"></div>
-            <div class="se-scroll" id="seScroll">
-              <pre class="se-highlight" id="seHighlight" aria-hidden="true"></pre>
-              <textarea class="se-input" id="seInput" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
-            </div>
-          </div>
-          <div class="se-status" id="seStatus">Lua · Ln 1, Col 1 · UTF-8</div>
-        </div>
-      </div>
-
-      <!-- Command bar -->
-      <div id="commandBar">
-        <span class="cb-prefix">&gt;</span>
-        <input id="cmdInput" placeholder="Command bar — try: insert part, goto 0,10,0, theme light, publish, ai:make an obby">
-        <button class="mini" id="cmdRun">Run</button>
-      </div>
-    </section>
-
-    <!-- Right dock -->
-    <section id="rightDock" class="dock">
-      <div class="dtabs" id="rightTabs">
-        <button class="dtab active" data-panel="properties">Properties</button>
-        <button class="dtab" data-panel="ai">AI Builder</button>
-        <button class="dtab" data-panel="output">Output</button>
-        <div class="dtabs-tools">
-          <button class="ico sm" id="rightCollapse" title="Collapse panel">⟩</button>
-        </div>
-      </div>
-      <div class="dcontent">
-        <div class="dpanel active" data-panel="properties">
-          <div class="prop-head" id="propHead">No selection</div>
-          <div id="propList" class="proplist"></div>
-        </div>
-
-        <div class="dpanel" data-panel="ai">
-          <div class="ai-head">
-            <div class="ai-orb"></div>
-            <div>
-              <div class="ai-title">AI Builder &amp; Coder</div>
-              <div class="muted small" id="aiModeLabel">Offline engine · Lua aware</div>
-            </div>
-          </div>
-          <div class="chips" id="aiQuick">
-            <button class="chipbtn" data-ai="Build an obby with lava and checkpoints">Obby</button>
-            <button class="chipbtn" data-ai="Write a coin collector script">Coins</button>
-            <button class="chipbtn" data-ai="Make a tycoon dropper">Tycoon</button>
-            <button class="chipbtn" data-ai="Create a sword fight arena">Arena</button>
-            <button class="chipbtn" data-ai="Add a day night cycle">Day/Night</button>
-          </div>
-          <div id="aiLog" class="ailog"></div>
-          <div class="ai-input">
-            <textarea id="aiInput" rows="2" placeholder="Describe what to build or which Lua to write…"></textarea>
-            <div class="ai-actions">
-              <label class="switch"><input type="checkbox" id="aiBuild" checked><span>Build parts</span></label>
-              <label class="switch"><input type="checkbox" id="aiScript" checked><span>Write Lua</span></label>
-              <button class="btn sm accent" id="btnAiGo">Generate</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="dpanel" data-panel="output">
-          <div class="panel-search">
-            <input id="outputFilter" placeholder="Filter output…">
-            <button class="mini" id="btnClearOutput">Clear</button>
-          </div>
-          <div id="outputList" class="output"></div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- ===== Status bar ===== -->
-  <footer id="statusbar">
-    <span id="stMode" class="st-item">EditMode</span>
-    <span id="stSel" class="st-item">1 item selected</span>
-    <span id="stPos" class="st-item">0, 0, 0</span>
-    <span class="st-spacer"></span>
-    <span id="stFps" class="st-item">60 fps</span>
-    <span id="stNet" class="st-item">● offline</span>
-    <span id="stVer" class="st-item">v1.0.0</span>
-  </footer>
-
-  <!-- ===== Start screen ===== -->
-  <div id="startScreen" class="overlay">
-    <div class="start-inner">
-      <div class="start-hero">
-        <img class="start-logo" src="assets/logo.svg" alt="">
-        <div>
-          <h1>Roblox Studio <span>Android Edition</span></h1>
-          <p>Build, script, AI-generate and publish Roblox experiences — from your phone, tablet or browser.</p>
-          <div class="start-actions">
-            <button class="btn accent lg" id="stNew">＋ New Baseplate</button>
-            <button class="btn lg" id="stTemplates">Browse templates</button>
-            <button class="btn lg ghost" id="stOpen">Open place file</button>
-            <input type="file" id="fileOpen" accept=".rbxlx,.xml,.json" hidden>
-          </div>
-        </div>
-      </div>
-
-      <div class="start-cols">
-        <section>
-          <h2>Game templates</h2>
-          <div class="cardgrid" id="startTemplates"></div>
-        </section>
-        <section>
-          <h2>Recent places</h2>
-          <div class="list" id="recentList"></div>
-          <h2 class="mt">Group games</h2>
-          <div class="list" id="startGroups"></div>
-        </section>
-      </div>
-
-      <div class="start-foot">
-        <button class="mini" id="stAccounts">API settings</button>
-        <button class="mini" id="stImport">Import .rbxlx</button>
-        <button class="muted small" id="stHide">Hide start screen</button>
-      </div>
+    <div class="shot">
+      <div class="bar"><i></i><i></i><i></i><span>Roblox Studio Android Edition — web build</span></div>
+      <img src="app/assets/og.png" alt="Roblox Studio Android Edition editor screenshot">
     </div>
   </div>
 
-  <!-- ===== Modal host ===== -->
-  <div id="modalHost" class="overlay hidden">
-    <div class="modal" id="modalBox">
-      <div class="modal-head"><span id="modalTitle">Dialog</span><button class="ico" id="modalClose">✕</button></div>
-      <div class="modal-body" id="modalBody"></div>
-      <div class="modal-foot" id="modalFoot"></div>
+  <section id="features">
+    <h2>Everything you need to ship a game</h2>
+    <p class="lead">The familiar Studio workflow, rebuilt for small screens and the browser — with no install required to start.</p>
+    <div class="grid">
+      <div class="card"><div class="ic">🧱</div><h3>3D viewport</h3><p>Orbit, pinch and pan the camera; tap to select, then move, rotate and resize parts with touch or mouse gizmos.</p></div>
+      <div class="card"><div class="ic">📜</div><h3>Lua script editor</h3><p>Write Luau-style scripts with highlighting and run them in Edit or Play mode. Full interpreter runs on-device.</p></div>
+      <div class="card"><div class="ic">✨</div><h3>AI Builder &amp; Coder</h3><p>Describe what you want — “obby with lava and checkpoints” — and build it in one tap, or let AI write the script.</p></div>
+      <div class="card"><div class="ic">🎮</div><h3>12 templates + toolbox</h3><p>Obby, tycoon, racing, simulator and more, plus a searchable part/model library to drop straight into your place.</p></div>
+      <div class="card"><div class="ic">🚀</div><h3>Publish to Roblox</h3><p>Publish through Open Cloud with your API key. Paste your game link — the Universe ID is found automatically.</p></div>
+      <div class="card"><div class="ic">💾</div><h3>DataStores built in</h3><p><code>DataStoreService</code> works while you test and saves between sessions. Published games use Roblox's real DataStores.</p></div>
+      <div class="card"><div class="ic">🕹️</div><h3>Touch controls</h3><p>Play mode ships with a virtual joystick and jump button, plus keyboard controls on desktop.</p></div>
+      <div class="card"><div class="ic">📴</div><h3>Offline &amp; private</h3><p>Installs as a PWA, keeps drafts and recent places on your device, and never sees your credentials — the web build ships none.</p></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <p class="lead">From empty baseplate to players in four steps — your PC can be switched off the whole time.</p>
+    <div class="steps">
+      <div class="step"><h3>Build &amp; script</h3><p>Assemble your place in the viewport and write or generate the Lua scripts that make it come alive.</p></div>
+      <div class="step"><h3>Test in Play mode</h3><p>Hit Play to walk around your own game with touch controls, watch the Output and iterate fast.</p></div>
+      <div class="step"><h3>Publish</h3><p>Paste your game's link in Game Settings, add your Open Cloud API key once, and press Publish now.</p></div>
+      <div class="step"><h3>Players join</h3><p>The game runs on Roblox's own servers — players just open your game link like any other Roblox experience.</p></div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <h2>FAQ</h2>
+    <div class="faq">
+      <details open>
+        <summary>Do I need to verify my Roblox account?</summary>
+        <p>No. There is no sign-in at all — publishing is authenticated with an Open Cloud API key (create one at create.roblox.com → Settings → API Keys with the <b>universe-places → Write</b> permission). No government ID, no OAuth app, no client secret.</p>
+      </details>
+      <details>
+        <summary>Do I need my computer on for players to play?</summary>
+        <p>No. Publishing uploads your place to Roblox; the game then runs on Roblox's servers. Your phone or PC is only needed while you're editing. This also means your home IP address is never exposed.</p>
+      </details>
+      <details>
+        <summary>What do I need to publish?</summary>
+        <p>Three things: an Open Cloud API key, your game's link (the app auto-finds the Universe ID from it), and a place that already exists on your Roblox account. Everything is saved in Settings → Credentials on your device.</p>
+      </details>
+      <details>
+        <summary>Is it free? Does it work offline?</summary>
+        <p>Yes and yes. The editor, templates and offline AI engine all work without payment or network; only AI model calls (optional) and publishing need a connection. The web app caches its shell for offline use.</p>
+      </details>
+    </div>
+  </section>
+
+  <div class="band">
+    <h2>Start building in seconds</h2>
+    <p>Open the editor right now in your browser, or install the Android APK for the native experience with direct Open Cloud publishing.</p>
+    <div class="cta">
+      <a class="btn primary" href="app/">Open the web app</a>
+      <a class="btn ghost" href="https://github.com/GoStudios-Real/Roblox-Studio-Android-Edition/releases/download/v1.0.0/RobloxStudioAE-1.0.0.apk">Download RobloxStudioAE-1.0.0.apk</a>
+    </div>
+    <div class="specs">
+      <span class="spec">Android 8.0+</span>
+      <span class="spec">Any modern browser</span>
+      <span class="spec">~0.2 MB APK</span>
+      <span class="spec">Open-source on GitHub</span>
     </div>
   </div>
 
-  <!-- ===== Context menu ===== -->
-  <div id="ctxMenu" class="ctx hidden"></div>
+</main>
 
-  <!-- ===== Toasts ===== -->
-  <div id="toasts" class="toasts"></div>
+<footer>
+  <div class="wrap foot">
+    <div>© 2026 GoStudios · Not affiliated with or endorsed by Roblox Corporation.</div>
+    <nav>
+      <a href="app/">Editor</a>
+      <a href="https://github.com/GoStudios-Real/Roblox-Studio-Android-Edition">GitHub</a>
+      <a href="https://github.com/GoStudios-Real/Roblox-Studio-Android-Edition/releases">Releases</a>
+      <a href="https://github.com/GoStudios-Real/Roblox-Studio-Android-Edition/issues">Issues</a>
+    </nav>
+  </div>
+</footer>
 
-  <div id="dragGhost" class="drag-ghost hidden"></div>
-</div>
-
-<script src="js/lua.js"></script>
-<script src="js/secrets.js"></script>
-<script src="js/config.js"></script>
-<script src="js/templates.js"></script>
-<script src="js/ai.js"></script>
-<script src="js/roblox.js"></script>
-<script src="js/engine.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/main.js"></script>
 </body>
 </html>

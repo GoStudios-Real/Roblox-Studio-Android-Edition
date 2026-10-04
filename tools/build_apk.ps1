@@ -1,4 +1,4 @@
-# Builds a signed Android APK of Roblox Studio Android Edition
+﻿# Builds a signed Android APK of Roblox Studio Android Edition
 # without Gradle, using the plain Android SDK toolchain:
 #   aapt2 (compile/link) -> javac -> d8 -> zipalign -> apksigner
 #
@@ -40,7 +40,7 @@ Write-Host '== prereqs ==' -ForegroundColor Cyan
 @($Aapt2, $D8, $Zipalign, $Apksign, $Jar, $Manifest) | ForEach-Object { Need $_ }
 if (-not (Get-Command javac -ErrorAction SilentlyContinue)) { throw 'javac not on PATH (install a JDK)' }
 if (-not (Test-Path (Join-Path $Root 'tools\opencloud.key'))) { throw 'tools/opencloud.key not found' }
-Need (Join-Path $Root 'docs\index.html')
+Need (Join-Path $Root 'docs\app\index.html')
 
 # 1. assets -----------------------------------------------------------------
 Write-Host '== staging assets ==' -ForegroundColor Cyan
@@ -56,10 +56,10 @@ $secrets = @"
 // Baked secrets for the APK build (this copy is gitignored).
 window.RSAE_SECRETS = { openCloudApiKey: "$key" };
 "@
-Set-Content -Path (Join-Path $Adocs 'js\secrets.js') -Value $secrets -Encoding UTF8 -NoNewline
-$b = [IO.File]::ReadAllBytes((Join-Path $Adocs 'js\secrets.js'))
+Set-Content -Path (Join-Path $Adocs 'app\js\secrets.js') -Value $secrets -Encoding UTF8 -NoNewline
+$b = [IO.File]::ReadAllBytes((Join-Path $Adocs 'app\js\secrets.js'))
 if ($b.Length -gt 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -eq 0xBF) {
-  [IO.File]::WriteAllBytes((Join-Path $Adocs 'js\secrets.js'), $b[3..($b.Length - 1)])
+  [IO.File]::WriteAllBytes((Join-Path $Adocs 'app\js\secrets.js'), $b[3..($b.Length - 1)])
 }
 
 # 2. clean + res ------------------------------------------------------------
@@ -95,7 +95,7 @@ if ($LASTEXITCODE -ne 0) { throw 'd8 failed' }
 
 # 6. normalise zip entry names + inject classes.dex --------------------------
 # (aapt2 on Windows writes nested assets with backslashes, which Android
-#  cannot open — fix_zip.py rewrites everything to forward slashes.)
+#  cannot open â€” fix_zip.py rewrites everything to forward slashes.)
 Write-Host '== zip fixup ==' -ForegroundColor Cyan
 $Fixed = Join-Path $Out 'fixed.apk'
 python (Join-Path $Root 'tools\fix_zip.py') $Base $Fixed --add (Join-Path $DexOut 'classes.dex')

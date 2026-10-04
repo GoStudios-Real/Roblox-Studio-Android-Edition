@@ -89,7 +89,7 @@ const FILES = [
   'lua.js', 'secrets.js', 'config.js', 'templates.js', 'ai.js',
   'roblox.js', 'engine.js', 'ui.js', 'main.js'
 ];
-const jsDir = path.join(__dirname, '..', 'docs', 'js');
+const jsDir = path.join(__dirname, '..', 'docs', 'app', 'js');
 
 let passed = 0;
 function ok(cond, label) {
