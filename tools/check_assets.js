@@ -21,6 +21,7 @@ function scan(file, base, label) {
 }
 
 const landing = scan(path.join(root, 'index.html'), root, 'landing');
+scan(path.join(root, 'editor.html'), root, 'editor-alias');
 const editor = scan(path.join(app, 'index.html'), app, 'editor');
 
 const scripts = editor ? [...editor.matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]) : [];
