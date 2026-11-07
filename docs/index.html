@@ -105,6 +105,55 @@ footer{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 44px;colo
 .foot{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between}
 .foot nav{display:flex;gap:16px;flex-wrap:wrap}
 @media (max-width:640px){.hd nav a:not(.btn){display:none}.hero{padding-top:52px}}
+
+/* Finish the existing Studio-inspired surface without changing its flows. */
+::selection{background:rgba(76,194,255,.28);color:var(--txt)}
+:focus-visible{outline:2px solid var(--accent2);outline-offset:3px}
+.wrap{max-width:1120px}
+header{background:rgba(15,17,21,.9);border-color:rgba(76,194,255,.13)}
+.hd{height:68px}
+.hd img{width:34px;height:34px}
+.hd b{font-size:15.5px}
+.hero{padding:86px 0 42px}
+.badge{padding:6px 14px;letter-spacing:.04em;text-transform:uppercase;font-size:11px;background:linear-gradient(115deg,rgba(0,162,255,.13),rgba(76,194,255,.04))}
+.hero h1{font-family:"Bahnschrift","Arial Narrow",system-ui,sans-serif;font-size:clamp(36px,6.2vw,64px);font-weight:760;letter-spacing:-1.7px;line-height:1.04}
+.hero h1 em{color:var(--accent2)}
+.hero p.sub{max-width:690px;line-height:1.7}
+.btn{transition:transform .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease}
+.btn.primary{box-shadow:0 6px 16px rgba(0,0,0,.24)}
+.btn.primary:hover{box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.btn.ghost:hover{border-color:rgba(76,194,255,.38)}
+.shot{margin-top:58px;border-color:rgba(76,194,255,.24);box-shadow:0 28px 90px rgba(0,0,0,.52)}
+.shot .bar{padding:12px 16px}
+.shot img{min-height:180px;object-fit:cover}
+section{padding-top:82px}
+h2{letter-spacing:-.7px}
+.lead{line-height:1.75}
+.card,.step{background:linear-gradient(150deg,rgba(26,30,38,.96),rgba(20,23,29,.96));border-color:rgba(154,164,181,.14);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.card:hover,.step:hover{transform:translateY(-3px);border-color:rgba(76,194,255,.35);box-shadow:0 16px 38px rgba(0,0,0,.22)}
+.card .ic{color:var(--accent2);box-shadow:inset 0 1px rgba(255,255,255,.06)}
+.step::before{box-shadow:0 3px 9px rgba(0,0,0,.28)}
+.faq details{transition:border-color .18s ease,background-color .18s ease}
+.faq details:hover,.faq details[open]{border-color:rgba(76,194,255,.27)}
+.band{box-shadow:inset 0 1px rgba(255,255,255,.04),0 20px 60px rgba(0,0,0,.16)}
+.foot nav a{color:var(--txt2)}
+.foot nav a:hover{color:var(--accent2)}
+.ai-tools{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:22px auto 0}
+.ai-tool{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border:1px solid rgba(76,194,255,.2);border-radius:999px;background:rgba(0,162,255,.07);color:var(--txt2);font-size:13px;font-weight:600}
+.ai-tool svg{width:16px;height:16px;color:var(--accent2);flex:none}
+@media (max-width:640px){
+  .hd{height:60px;gap:10px}
+  .hd b{font-size:13.5px}
+  .hero{padding-top:58px}
+  .hero h1{font-size:clamp(34px,10vw,48px);letter-spacing:-1.15px}
+  .hero p.sub{font-size:16px}
+  .shot{margin-top:38px;border-radius:12px}
+  section{padding-top:64px}
+  .band{padding:34px 20px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
 </style>
 </head>
 <body>
@@ -133,6 +182,10 @@ footer{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 44px;colo
       <a class="btn ghost" href="https://github.com/GoStudios-Real/Roblox-Studio-Android-Edition/releases/download/v1.1.0/RobloxStudioAE-1.1.0.apk">Download APK</a>
     </div>
     <div class="cta-note">No Roblox account sign-in required — publishing uses your own Open Cloud API key.</div>
+    <div class="ai-tools" aria-label="AI creation tools">
+      <span class="ai-tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 13.8 9l5.2 2-5.2 1.8-1.8 5.2-1.8-5.2L5 11l5.2-2L12 3.5Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"/></svg>AI Builder</span>
+      <span class="ai-tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>AI Coder</span>
+    </div>
 
     <div class="shot">
       <div class="bar"><i></i><i></i><i></i><span>Roblox Studio Android Edition — web build</span></div>
