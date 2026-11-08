@@ -68,3 +68,11 @@ tools/           Build + test scripts
 
 - Not affiliated with Roblox Corporation.
 - The editor ships with an empty API-key stub (`docs/app/js/secrets.js`); your key stays on your device/only in your local build.
+
+
+---
+
+## OpenCode
+
+This repository is maintained with [OpenCode](https://opencode.ai).
+Hub: https://gostudios-real.github.io/
